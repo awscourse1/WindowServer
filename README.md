@@ -4,8 +4,9 @@ Bienvenue sur ce dépôt GitHub qui retrace l'installation complète de **Window
 
 ## 🔧 Contenu
 
-- [`installation.md`](./installation.md) — Toutes les étapes d'installation détaillées, illustrées avec des captures d’écran
+- [`installation.md`](./installation.md) — Toutes les étapes d'installation détaillées, illustrées avec des captures d'écran
 - `/images/` — Les images utilisées dans le tutoriel
+- `/Export_AD_Axel_Loquet/` — Export des données Active Directory (utilisateurs, groupes et OUs)
 
 ## 🧑‍💻 Auteur
 
