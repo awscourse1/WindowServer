@@ -1,0 +1,307 @@
+# Charge le module ActiveDirectory si nécessaire
+Import-Module ActiveDirectory
+
+# 1) Création de l’OU racine ps_YnovDomain (protégée contre suppression accidentelle)
+New-ADOrganizationalUnit `
+    -Name "ps_YnovDomain" `
+    -Path "DC=YnovDomaine,DC=com" `
+    -ProtectedFromAccidentalDeletion $true
+
+# 2) Sous ps_YnovDomain, création des OUs de premier niveau : France et International
+New-ADOrganizationalUnit `
+    -Name "France" `
+    -Path "OU=ps_YnovDomain,DC=YnovDomaine,DC=com" `
+    -ProtectedFromAccidentalDeletion $false
+
+New-ADOrganizationalUnit `
+    -Name "International" `
+    -Path "OU=ps_YnovDomain,DC=YnovDomaine,DC=com" `
+    -ProtectedFromAccidentalDeletion $false
+
+# 3) Sous France : création des zones géographiques (Nord, Sud, Est, Ouest, Paris)
+$baseFrance = "OU=France,OU=ps_YnovDomain,DC=YnovDomaine,DC=com"
+
+New-ADOrganizationalUnit `
+    -Name "Nord" `
+    -Path $baseFrance `
+    -ProtectedFromAccidentalDeletion $false
+
+New-ADOrganizationalUnit `
+    -Name "Sud" `
+    -Path $baseFrance `
+    -ProtectedFromAccidentalDeletion $false
+
+New-ADOrganizationalUnit `
+    -Name "Est" `
+    -Path $baseFrance `
+    -ProtectedFromAccidentalDeletion $false
+
+New-ADOrganizationalUnit `
+    -Name "Ouest" `
+    -Path $baseFrance `
+    -ProtectedFromAccidentalDeletion $false
+
+New-ADOrganizationalUnit `
+    -Name "Paris" `
+    -Path $baseFrance `
+    -ProtectedFromAccidentalDeletion $false
+
+# 4) Sous Nord : villes Lille, Rouen, Rennes, puis leurs sous-OUs Utilisateurs/Ordinateurs
+$baseNord = "OU=Nord,OU=France,OU=ps_YnovDomain,DC=YnovDomaine,DC=com"
+
+New-ADOrganizationalUnit `
+    -Name "Lille" `
+    -Path $baseNord `
+    -ProtectedFromAccidentalDeletion $false
+
+New-ADOrganizationalUnit `
+    -Name "Rouen" `
+    -Path $baseNord `
+    -ProtectedFromAccidentalDeletion $false
+
+New-ADOrganizationalUnit `
+    -Name "Rennes" `
+    -Path $baseNord `
+    -ProtectedFromAccidentalDeletion $false
+
+# Sous Lille
+New-ADOrganizationalUnit `
+    -Name "Utilisateurs" `
+    -Path "OU=Lille,$baseNord" `
+    -ProtectedFromAccidentalDeletion $false
+
+New-ADOrganizationalUnit `
+    -Name "Ordinateurs" `
+    -Path "OU=Lille,$baseNord" `
+    -ProtectedFromAccidentalDeletion $false
+
+# Sous Rouen
+New-ADOrganizationalUnit `
+    -Name "Utilisateurs" `
+    -Path "OU=Rouen,$baseNord" `
+    -ProtectedFromAccidentalDeletion $false
+
+New-ADOrganizationalUnit `
+    -Name "Ordinateurs" `
+    -Path "OU=Rouen,$baseNord" `
+    -ProtectedFromAccidentalDeletion $false
+
+# Sous Rennes (Nord)
+New-ADOrganizationalUnit `
+    -Name "Utilisateurs" `
+    -Path "OU=Rennes,$baseNord" `
+    -ProtectedFromAccidentalDeletion $false
+
+New-ADOrganizationalUnit `
+    -Name "Ordinateurs" `
+    -Path "OU=Rennes,$baseNord" `
+    -ProtectedFromAccidentalDeletion $false
+
+# 5) Sous Sud : Aix-en-Provence, Montpellier, Nice-Sophia, Toulouse + Utilisateurs/Ordinateurs
+$baseSud = "OU=Sud,OU=France,OU=ps_YnovDomain,DC=YnovDomaine,DC=com"
+
+New-ADOrganizationalUnit `
+    -Name "Aix-en-Provence" `
+    -Path $baseSud `
+    -ProtectedFromAccidentalDeletion $false
+
+New-ADOrganizationalUnit `
+    -Name "Montpellier" `
+    -Path $baseSud `
+    -ProtectedFromAccidentalDeletion $false
+
+New-ADOrganizationalUnit `
+    -Name "Nice-Sophia" `
+    -Path $baseSud `
+    -ProtectedFromAccidentalDeletion $false
+
+New-ADOrganizationalUnit `
+    -Name "Toulouse" `
+    -Path $baseSud `
+    -ProtectedFromAccidentalDeletion $false
+
+# Sous Aix-en-Provence
+New-ADOrganizationalUnit `
+    -Name "Utilisateurs" `
+    -Path "OU=Aix-en-Provence,$baseSud" `
+    -ProtectedFromAccidentalDeletion $false
+
+New-ADOrganizationalUnit `
+    -Name "Ordinateurs" `
+    -Path "OU=Aix-en-Provence,$baseSud" `
+    -ProtectedFromAccidentalDeletion $false
+
+# Sous Montpellier
+New-ADOrganizationalUnit `
+    -Name "Utilisateurs" `
+    -Path "OU=Montpellier,$baseSud" `
+    -ProtectedFromAccidentalDeletion $false
+
+New-ADOrganizationalUnit `
+    -Name "Ordinateurs" `
+    -Path "OU=Montpellier,$baseSud" `
+    -ProtectedFromAccidentalDeletion $false
+
+# Sous Nice-Sophia
+New-ADOrganizationalUnit `
+    -Name "Utilisateurs" `
+    -Path "OU=Nice-Sophia,$baseSud" `
+    -ProtectedFromAccidentalDeletion $false
+
+New-ADOrganizationalUnit `
+    -Name "Ordinateurs" `
+    -Path "OU=Nice-Sophia,$baseSud" `
+    -ProtectedFromAccidentalDeletion $false
+
+# Sous Toulouse
+New-ADOrganizationalUnit `
+    -Name "Utilisateurs" `
+    -Path "OU=Toulouse,$baseSud" `
+    -ProtectedFromAccidentalDeletion $false
+
+New-ADOrganizationalUnit `
+    -Name "Ordinateurs" `
+    -Path "OU=Toulouse,$baseSud" `
+    -ProtectedFromAccidentalDeletion $false
+
+# 6) Sous Est : Lyon, Strasbourg + Utilisateurs/Ordinateurs
+$baseEst = "OU=Est,OU=France,OU=ps_YnovDomain,DC=YnovDomaine,DC=com"
+
+New-ADOrganizationalUnit `
+    -Name "Lyon" `
+    -Path $baseEst `
+    -ProtectedFromAccidentalDeletion $false
+
+New-ADOrganizationalUnit `
+    -Name "Strasbourg" `
+    -Path $baseEst `
+    -ProtectedFromAccidentalDeletion $false
+
+# Sous Lyon
+New-ADOrganizationalUnit `
+    -Name "Utilisateurs" `
+    -Path "OU=Lyon,$baseEst" `
+    -ProtectedFromAccidentalDeletion $false
+
+New-ADOrganizationalUnit `
+    -Name "Ordinateurs" `
+    -Path "OU=Lyon,$baseEst" `
+    -ProtectedFromAccidentalDeletion $false
+
+# Sous Strasbourg
+New-ADOrganizationalUnit `
+    -Name "Utilisateurs" `
+    -Path "OU=Strasbourg,$baseEst" `
+    -ProtectedFromAccidentalDeletion $false
+
+New-ADOrganizationalUnit `
+    -Name "Ordinateurs" `
+    -Path "OU=Strasbourg,$baseEst" `
+    -ProtectedFromAccidentalDeletion $false
+
+# 7) Sous Ouest : Bordeaux, Nantes, Rennes + Utilisateurs/Ordinateurs
+$baseOuest = "OU=Ouest,OU=France,OU=ps_YnovDomain,DC=YnovDomaine,DC=com"
+
+New-ADOrganizationalUnit `
+    -Name "Bordeaux" `
+    -Path $baseOuest `
+    -ProtectedFromAccidentalDeletion $false
+
+New-ADOrganizationalUnit `
+    -Name "Nantes" `
+    -Path $baseOuest `
+    -ProtectedFromAccidentalDeletion $false
+
+New-ADOrganizationalUnit `
+    -Name "Rennes" `
+    -Path $baseOuest `
+    -ProtectedFromAccidentalDeletion $false
+
+# Sous Bordeaux
+New-ADOrganizationalUnit `
+    -Name "Utilisateurs" `
+    -Path "OU=Bordeaux,$baseOuest" `
+    -ProtectedFromAccidentalDeletion $false
+
+New-ADOrganizationalUnit `
+    -Name "Ordinateurs" `
+    -Path "OU=Bordeaux,$baseOuest" `
+    -ProtectedFromAccidentalDeletion $false
+
+# Sous Nantes
+New-ADOrganizationalUnit `
+    -Name "Utilisateurs" `
+    -Path "OU=Nantes,$baseOuest" `
+    -ProtectedFromAccidentalDeletion $false
+
+New-ADOrganizationalUnit `
+    -Name "Ordinateurs" `
+    -Path "OU=Nantes,$baseOuest" `
+    -ProtectedFromAccidentalDeletion $false
+
+# Sous Rennes (Ouest)
+New-ADOrganizationalUnit `
+    -Name "Utilisateurs" `
+    -Path "OU=Rennes,$baseOuest" `
+    -ProtectedFromAccidentalDeletion $false
+
+New-ADOrganizationalUnit `
+    -Name "Ordinateurs" `
+    -Path "OU=Rennes,$baseOuest" `
+    -ProtectedFromAccidentalDeletion $false
+
+# 8) Sous Paris : Paris-Est, Paris-Ouest + Utilisateurs/Ordinateurs
+$baseParis = "OU=Paris,OU=France,OU=ps_YnovDomain,DC=YnovDomaine,DC=com"
+
+New-ADOrganizationalUnit `
+    -Name "Paris-Est" `
+    -Path $baseParis `
+    -ProtectedFromAccidentalDeletion $false
+
+New-ADOrganizationalUnit `
+    -Name "Paris-Ouest" `
+    -Path $baseParis `
+    -ProtectedFromAccidentalDeletion $false
+
+# Sous Paris-Est
+New-ADOrganizationalUnit `
+    -Name "Utilisateurs" `
+    -Path "OU=Paris-Est,$baseParis" `
+    -ProtectedFromAccidentalDeletion $false
+
+New-ADOrganizationalUnit `
+    -Name "Ordinateurs" `
+    -Path "OU=Paris-Est,$baseParis" `
+    -ProtectedFromAccidentalDeletion $false
+
+# Sous Paris-Ouest
+New-ADOrganizationalUnit `
+    -Name "Utilisateurs" `
+    -Path "OU=Paris-Ouest,$baseParis" `
+    -ProtectedFromAccidentalDeletion $false
+
+New-ADOrganizationalUnit `
+    -Name "Ordinateurs" `
+    -Path "OU=Paris-Ouest,$baseParis" `
+    -ProtectedFromAccidentalDeletion $false
+
+# 9) Sous International : exemple Casablanca + Utilisateurs/Ordinateurs
+$baseIntl = "OU=International,OU=ps_YnovDomain,DC=YnovDomaine,DC=com"
+
+New-ADOrganizationalUnit `
+    -Name "Casablanca" `
+    -Path $baseIntl `
+    -ProtectedFromAccidentalDeletion $false
+
+# Sous Casablanca
+New-ADOrganizationalUnit `
+    -Name "Utilisateurs" `
+    -Path "OU=Casablanca,$baseIntl" `
+    -ProtectedFromAccidentalDeletion $false
+
+New-ADOrganizationalUnit `
+    -Name "Ordinateurs" `
+    -Path "OU=Casablanca,$baseIntl" `
+    -ProtectedFromAccidentalDeletion $false
+
+# (Vous pouvez ajouter ici d’autres pays/villes sous International si besoin)
