@@ -1,0 +1,265 @@
+# -----------------------------------------------------------------------
+# SCRIPT IDÉMPOTENT – 11 comptes + affectation EXACTE aux groupes
+# selon votre schéma mis à jour (Direction = colonnes 1,3,10,11, etc.).
+# -----------------------------------------------------------------------
+
+# 1) Charger le module ActiveDirectory
+Import-Module ActiveDirectory
+
+# 2) Définir la racine de l’arborescence AD (à adapter si besoin) :
+#    OU=YnovGroup,OU=YnovDomain,DC=YnovDomaine,DC=com
+$baseDN = "OU=YnovGroup,OU=YnovDomain,DC=YnovDomaine,DC=com"
+
+# 3) Emplacement par défaut pour créer tous les comptes :
+#    OU=Utilisateurs,OU=Paris-Est,OU=Paris,OU=France,$baseDN
+#    (Adaptez pour chacun si vous voulez un autre OU “ville”)
+$ouUtilisateursParisEst = "OU=Utilisateurs,OU=Paris-Est,OU=Paris,OU=France,$baseDN"
+
+# 4) Mot de passe temporaire commun (à modifier en production)
+$password = ConvertTo-SecureString "P@ssw0rd123" -AsPlainText -Force
+
+# =======================================================================
+# 5) CRÉATION IDÉMPOTENTE DES 11 COMPTES
+#    Si le SamAccountName existe déjà, on ne le recrée pas.
+# =======================================================================
+
+# 5.1) Alice Dupont – adupont
+if (-not (Get-ADUser -Filter { SamAccountName -eq "adupont" } -ErrorAction SilentlyContinue)) {
+    New-ADUser `
+        -Name "Alice Dupont" `
+        -GivenName "Alice" `
+        -Surname "Dupont" `
+        -SamAccountName "adupont" `
+        -UserPrincipalName "alice.dupont@ynovdomaine.com" `
+        -Path $ouUtilisateursParisEst `
+        -AccountPassword $password `
+        -Enabled $true
+    Write-Host "Création : adupont (Alice Dupont)"
+} else {
+    Write-Host "→ Le compte 'adupont' (Alice Dupont) existe déjà."
+}
+
+# 5.2) Marc Martin – mmartin
+if (-not (Get-ADUser -Filter { SamAccountName -eq "mmartin" } -ErrorAction SilentlyContinue)) {
+    New-ADUser `
+        -Name "Marc Martin" `
+        -GivenName "Marc" `
+        -Surname "Martin" `
+        -SamAccountName "mmartin" `
+        -UserPrincipalName "marc.martin@ynovdomaine.com" `
+        -Path $ouUtilisateursParisEst `
+        -AccountPassword $password `
+        -Enabled $true
+    Write-Host "Création : mmartin (Marc Martin)"
+} else {
+    Write-Host "→ Le compte 'mmartin' (Marc Martin) existe déjà."
+}
+
+# 5.3) Sophie Leroy – sleroy
+if (-not (Get-ADUser -Filter { SamAccountName -eq "sleroy" } -ErrorAction SilentlyContinue)) {
+    New-ADUser `
+        -Name "Sophie Leroy" `
+        -GivenName "Sophie" `
+        -Surname "Leroy" `
+        -SamAccountName "sleroy" `
+        -UserPrincipalName "sophie.leroy@ynovdomaine.com" `
+        -Path $ouUtilisateursParisEst `
+        -AccountPassword $password `
+        -Enabled $true
+    Write-Host "Création : sleroy (Sophie Leroy)"
+} else {
+    Write-Host "→ Le compte 'sleroy' (Sophie Leroy) existe déjà."
+}
+
+# 5.4) Julien Bernard – jbernard
+if (-not (Get-ADUser -Filter { SamAccountName -eq "jbernard" } -ErrorAction SilentlyContinue)) {
+    New-ADUser `
+        -Name "Julien Bernard" `
+        -GivenName "Julien" `
+        -Surname "Bernard" `
+        -SamAccountName "jbernard" `
+        -UserPrincipalName "julien.bernard@ynovdomaine.com" `
+        -Path $ouUtilisateursParisEst `
+        -AccountPassword $password `
+        -Enabled $true
+    Write-Host "Création : jbernard (Julien Bernard)"
+} else {
+    Write-Host "→ Le compte 'jbernard' (Julien Bernard) existe déjà."
+}
+
+# 5.5) Camille Petit – cpetit
+if (-not (Get-ADUser -Filter { SamAccountName -eq "cpetit" } -ErrorAction SilentlyContinue)) {
+    New-ADUser `
+        -Name "Camille Petit" `
+        -GivenName "Camille" `
+        -Surname "Petit" `
+        -SamAccountName "cpetit" `
+        -UserPrincipalName "camille.petit@ynovdomaine.com" `
+        -Path $ouUtilisateursParisEst `
+        -AccountPassword $password `
+        -Enabled $true
+    Write-Host "Création : cpetit (Camille Petit)"
+} else {
+    Write-Host "→ Le compte 'cpetit' (Camille Petit) existe déjà."
+}
+
+# 5.6) Laura Dubois – ldubois
+if (-not (Get-ADUser -Filter { SamAccountName -eq "ldubois" } -ErrorAction SilentlyContinue)) {
+    New-ADUser `
+        -Name "Laura Dubois" `
+        -GivenName "Laura" `
+        -Surname "Dubois" `
+        -SamAccountName "ldubois" `
+        -UserPrincipalName "laura.dubois@ynovdomaine.com" `
+        -Path $ouUtilisateursParisEst `
+        -AccountPassword $password `
+        -Enabled $true
+    Write-Host "Création : ldubois (Laura Dubois)"
+} else {
+    Write-Host "→ Le compte 'ldubois' (Laura Dubois) existe déjà."
+}
+
+# 5.7) Youssef Elamrani – yelamrani
+if (-not (Get-ADUser -Filter { SamAccountName -eq "yelamrani" } -ErrorAction SilentlyContinue)) {
+    New-ADUser `
+        -Name "Youssef Elamrani" `
+        -GivenName "Youssef" `
+        -Surname "Elamrani" `
+        -SamAccountName "yelamrani" `
+        -UserPrincipalName "youssef.elamrani@ynovdomaine.com" `
+        -Path $ouUtilisateursParisEst `
+        -AccountPassword $password `
+        -Enabled $true
+    Write-Host "Création : yelamrani (Youssef Elamrani)"
+} else {
+    Write-Host "→ Le compte 'yelamrani' (Youssef Elamrani) existe déjà."
+}
+
+# 5.8) Chloé Favre – cfavre
+if (-not (Get-ADUser -Filter { SamAccountName -eq "cfavre" } -ErrorAction SilentlyContinue)) {
+    New-ADUser `
+        -Name "Chloé Favre" `
+        -GivenName "Chloé" `
+        -Surname "Favre" `
+        -SamAccountName "cfavre" `
+        -UserPrincipalName "chloe.favre@ynovdomaine.com" `
+        -Path $ouUtilisateursParisEst `
+        -AccountPassword $password `
+        -Enabled $true
+    Write-Host "Création : cfavre (Chloé Favre)"
+} else {
+    Write-Host "→ Le compte 'cfavre' (Chloé Favre) existe déjà."
+}
+
+# 5.9) Pierre Durand – pdurand
+if (-not (Get-ADUser -Filter { SamAccountName -eq "pdurand" } -ErrorAction SilentlyContinue)) {
+    New-ADUser `
+        -Name "Pierre Durand" `
+        -GivenName "Pierre" `
+        -Surname "Durand" `
+        -SamAccountName "pdurand" `
+        -UserPrincipalName "pierre.durand@ynovdomaine.com" `
+        -Path $ouUtilisateursParisEst `
+        -AccountPassword $password `
+        -Enabled $true
+    Write-Host "Création : pdurand (Pierre Durand)"
+} else {
+    Write-Host "→ Le compte 'pdurand' (Pierre Durand) existe déjà."
+}
+
+# 5.10) Kévin Moreau – kmoreau
+if (-not (Get-ADUser -Filter { SamAccountName -eq "kmoreau" } -ErrorAction SilentlyContinue)) {
+    New-ADUser `
+        -Name "Kévin Moreau" `
+        -GivenName "Kévin" `
+        -Surname "Moreau" `
+        -SamAccountName "kmoreau" `
+        -UserPrincipalName "kevin.moreau@ynovdomaine.com" `
+        -Path $ouUtilisateursParisEst `
+        -AccountPassword $password `
+        -Enabled $true
+    Write-Host "Création : kmoreau (Kévin Moreau)"
+} else {
+    Write-Host "→ Le compte 'kmoreau' (Kévin Moreau) existe déjà."
+}
+
+# 5.11) Thomas Durand – tdurand
+if (-not (Get-ADUser -Filter { SamAccountName -eq "tdurand" } -ErrorAction SilentlyContinue)) {
+    New-ADUser `
+        -Name "Thomas Durand" `
+        -GivenName "Thomas" `
+        -Surname "Durand" `
+        -SamAccountName "tdurand" `
+        -UserPrincipalName "thomas.durand@ynovdomaine.com" `
+        -Path $ouUtilisateursParisEst `
+        -AccountPassword $password `
+        -Enabled $true
+    Write-Host "Création : tdurand (Thomas Durand)"
+} else {
+    Write-Host "→ Le compte 'tdurand' (Thomas Durand) existe déjà."
+}
+
+# =======================================================================
+# 6) AFFECTATION “par ligne” DES 11 comptes dans LES GROUPES (X par X)
+#    On reprend EXACTEMENT votre schéma mis à jour :
+#      – chaque ligne = un groupe
+#      – chaque colonne = un utilisateur (1..11)
+#      – un “X” signifie “cet utilisateur appartient à ce groupe”
+#
+#    Voici le mapping que vous avez précisé :
+#      • Direction (Paris-Est)    : colonnes 1, 3, 10, 11  → adupont, sleroy, kmoreau, tdurand
+#      • Comptabilite (Lyon)      : colonnes 1, 4        → adupont, jbernard
+#      • Commercial (Toulouse)    : colonnes 1, 2, 8     → adupont, mmartin, cfavre
+#      • Technique (Nantes)       : colonnes 1, 2        → adupont, mmartin
+#      • Communication (Aix)      : colonnes 1, 3, 5     → adupont, sleroy, cpetit
+#      • Service_Sociale (Lille)  : colonnes 1, 6, 11    → adupont, ldubois, tdurand
+#      • Service_Enseignant (Casa): colonnes 1, 7, 8     → adupont, yelamrani, cfavre
+#      • Service_Salle (Nice)     : colonnes 1, 10       → adupont, kmoreau
+#      • Refectoire (Paris-Ouest) : colonnes 1, 9        → adupont, pdurand
+#      • Service_Sport (Montpel.) : colonnes 1, 9        → adupont, pdurand
+# =======================================================================
+
+# 6.1) Direction (Paris-Est)
+Add-ADGroupMember -Identity "Direction" -Members `
+    "adupont","sleroy","kmoreau","tdurand"
+
+# 6.2) Comptabilite (Lyon)
+Add-ADGroupMember -Identity "Comptabilite" -Members `
+    "adupont","jbernard"
+
+# 6.3) Commercial (Toulouse)
+Add-ADGroupMember -Identity "Commercial" -Members `
+    "adupont","mmartin","cfavre"
+
+# 6.4) Technique (Nantes)
+Add-ADGroupMember -Identity "Technique" -Members `
+    "adupont","mmartin"
+
+# 6.5) Communication (Aix-en-Provence)
+Add-ADGroupMember -Identity "Communication" -Members `
+    "adupont","sleroy","cpetit"
+
+# 6.6) Service_Sociale (Lille)
+Add-ADGroupMember -Identity "Service_Sociale" -Members `
+    "adupont","ldubois","tdurand"
+
+# 6.7) Service_Enseignant (Casablanca)
+Add-ADGroupMember -Identity "Service_Enseignant" -Members `
+    "adupont","yelamrani","cfavre"
+
+# 6.8) Service_Salle (Nice-Sophia)
+Add-ADGroupMember -Identity "Service_Salle" -Members `
+    "adupont","kmoreau"
+
+# 6.9) Refectoire (Paris-Ouest)
+Add-ADGroupMember -Identity "Refectoire" -Members `
+    "adupont","pdurand"
+
+# 6.10) Service_Sport (Montpellier)
+Add-ADGroupMember -Identity "Service_Sport" -Members `
+    "adupont","pdurand"
+
+# -------------------------------------------------------------------
+Write-Host "→ Les 11 comptes ont été créés (ou détectés) et ajoutés"
+Write-Host "   EXACTEMENT aux groupes selon la matrice mise à jour."
+# -------------------------------------------------------------------
