@@ -7,6 +7,7 @@ Ce document détaille les étapes de configuration d'Active Directory, incluant 
 - [Création des Unités d'Organisation (OUs)](#création-des-unités-dorganisation-ous)
 - [Création des Utilisateurs](#création-des-utilisateurs)
 - [Mise à Jour des Permissions](#mise-à-jour-des-permissions)
+- [Exports Active Directory](#exports-active-directory)
 
 ## Création des Unités d'Organisation (OUs)
 
@@ -38,4 +39,12 @@ Les captures d'écran suivantes montrent l'état des répertoires partagés sur 
 
 ![Gestion des Partages sur le Serveur](./images/shares_partages.png)
 
-Vous pouvez également consulter la sortie complète de la console après l'exécution de ce script dans le fichier [`console.txt`](./console.txt). 
+Vous pouvez également consulter la sortie complète de la console après l'exécution de ce script dans le fichier [`console.txt`](./console.txt).
+
+## Exports Active Directory
+
+Les données d'Active Directory (utilisateurs, groupes et OUs) ont été exportées et sont disponibles dans le dossier [`Axel_Loquet_10_06_2025`](./Exports/Axel_Loquet_10_06_2025/). Ce dossier contient les fichiers CSV suivants :
+
+- [`AD_Groups_20250610_193920.csv`](./Exports/Axel_Loquet_10_06_2025/AD_Groups_20250610_193920.csv)
+- [`AD_OUs_20250610_193920.csv`](./Exports/Axel_Loquet_10_06_2025/AD_OUs_20250610_193920.csv)
+- [`AD_Users_20250610_193920.csv`](./Exports/Axel_Loquet_10_06_2025/AD_Users_20250610_193920.csv) 
