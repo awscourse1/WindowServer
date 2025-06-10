@@ -5,6 +5,7 @@ Bienvenue sur ce dépôt GitHub qui retrace l'installation complète de **Window
 ## 🔧 Contenu
 
 - [`installation.md`](./installation.md) — Toutes les étapes d'installation détaillées, illustrées avec des captures d'écran
+- [`configuration.md`](./configuration.md) — Configuration et gestion des accès (OUs, utilisateurs, permissions)
 - [`/images/`](./images/) — Les différentes images utilisées
 - [`/Exports/`](./Exports/) — Export des données Active Directory (utilisateurs, groupes et OUs) organisés par date dans des dossiers distincts
 - [`/Scripts/`](./Scripts/) - Ensemble des scripts utilisés

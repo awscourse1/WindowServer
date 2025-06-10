@@ -1,0 +1,59 @@
+Get-ADOrganizationalUnit -Filter * | Select-Object Name, DistinguishedName
+
+PS C:\Users\Administrateur> Get-ADOrganizationalUnit -Filter * | Select-Object Name, DistinguishedName
+
+Name               DistinguishedName                                                                     
+----               -----------------                                                                     
+Domain Controllers OU=Domain Controllers,DC=ynovDomaine,DC=com                                           
+ynovGroup          OU=ynovGroup,DC=ynovDomaine,DC=com                                                    
+France             OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com                                          
+International      OU=International,OU=ynovGroup,DC=ynovDomaine,DC=com                                   
+Nord               OU=Nord,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com                                  
+Sud                OU=Sud,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com                                   
+Est                OU=Est,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com                                   
+Ouest              OU=Ouest,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com                                 
+Paris              OU=Paris,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com                                 
+Lille              OU=Lille,OU=Nord,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com                         
+Rouen              OU=Rouen,OU=Nord,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com                         
+Aix-en-Provence    OU=Aix-en-Provence,OU=Sud,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com                
+Montpellier        OU=Montpellier,OU=Sud,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com                    
+Nice-Sophia        OU=Nice-Sophia,OU=Sud,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com                    
+Toulouse           OU=Toulouse,OU=Sud,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com                       
+Lyon               OU=Lyon,OU=Est,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com                           
+Strasbourg         OU=Strasbourg,OU=Est,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com                     
+Bordeaux           OU=Bordeaux,OU=Ouest,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com                     
+Nantes             OU=Nantes,OU=Ouest,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com                       
+Rennes             OU=Rennes,OU=Ouest,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com                       
+Paris-Est          OU=Paris-Est,OU=Paris,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com                    
+Paris-Ouest        OU=Paris-Ouest,OU=Paris,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com                  
+Utilisateurs       OU=Utilisateurs,OU=Lille,OU=Nord,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com         
+Utilisateurs       OU=Utilisateurs,OU=Rouen,OU=Nord,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com         
+Utilisateurs       OU=Utilisateurs,OU=Aix-en-Provence,OU=Sud,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com
+Utilisateurs       OU=Utilisateurs,OU=Montpellier,OU=Sud,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com    
+Utilisateurs       OU=Utilisateurs,OU=Nice-Sophia,OU=Sud,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com    
+Utilisateurs       OU=Utilisateurs,OU=Toulouse,OU=Sud,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com       
+Utilisateurs       OU=Utilisateurs,OU=Lyon,OU=Est,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com           
+Utilisateurs       OU=Utilisateurs,OU=Strasbourg,OU=Est,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com     
+Utilisateurs       OU=Utilisateurs,OU=Bordeaux,OU=Ouest,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com     
+Utilisateurs       OU=Utilisateurs,OU=Nantes,OU=Ouest,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com       
+Utilisateurs       OU=Utilisateurs,OU=Rennes,OU=Ouest,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com       
+Utilisateurs       OU=Utilisateurs,OU=Paris-Est,OU=Paris,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com    
+Utilisateurs       OU=Utilisateurs,OU=Paris-Ouest,OU=Paris,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com  
+Ordinateurs        OU=Ordinateurs,OU=Paris-Ouest,OU=Paris,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com   
+Ordinateurs        OU=Ordinateurs,OU=Paris-Est,OU=Paris,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com     
+Ordinateurs        OU=Ordinateurs,OU=Rennes,OU=Ouest,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com        
+Ordinateurs        OU=Ordinateurs,OU=Nantes,OU=Ouest,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com        
+Ordinateurs        OU=Ordinateurs,OU=Bordeaux,OU=Ouest,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com      
+Ordinateurs        OU=Ordinateurs,OU=Strasbourg,OU=Est,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com      
+Ordinateurs        OU=Ordinateurs,OU=Lyon,OU=Est,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com            
+Ordinateurs        OU=Ordinateurs,OU=Toulouse,OU=Sud,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com        
+Ordinateurs        OU=Ordinateurs,OU=Nice-Sophia,OU=Sud,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com     
+Ordinateurs        OU=Ordinateurs,OU=Montpellier,OU=Sud,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com     
+Ordinateurs        OU=Ordinateurs,OU=Aix-en-Provence,OU=Sud,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com 
+Ordinateurs        OU=Ordinateurs,OU=Rouen,OU=Nord,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com          
+Ordinateurs        OU=Ordinateurs,OU=Lille,OU=Nord,OU=France,OU=ynovGroup,DC=ynovDomaine,DC=com          
+Casablanca         OU=Casablanca,OU=International,OU=ynovGroup,DC=ynovDomaine,DC=com                     
+Ordinateurs        OU=Ordinateurs,OU=Casablanca,OU=International,OU=ynovGroup,DC=ynovDomaine,DC=com      
+Utilisateurs       OU=Utilisateurs,OU=Casablanca,OU=International,OU=ynovGroup,DC=ynovDomaine,DC=com     
+ps_YnovGroup       OU=ps_YnovGroup,DC=ynovDomaine,DC=com                                                 
+ps_France          OU=ps_France,OU=ps_YnovGroup,DC=ynovDomaine,DC=com 

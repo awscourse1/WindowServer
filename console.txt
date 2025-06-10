@@ -1,0 +1,2223 @@
+PS C:\Users\Administrateur>Import-Module ActiveDirectory
+
+# Liste des utilisateurs par OU
+$users = @{
+    "Direction" = @("ynovDomaine\user_paris_ouest1", "ynovDomaine\user_paris_ouest2")
+    "Compatibilité" = @("ynovDomaine\user_lyon")
+    "Commercial" = @("ynovDomaine\user_toulouse1", "ynovDomaine\user_toulouse2")
+    "Technique" = @("ynovDomaine\user_aix")
+    "Communication" = @("ynovDomaine\user_paris_ouest")
+    "Service sociale" = @("ynovDomaine\user_lille")
+    "Service enseignant" = @("ynovDomaine\user_nice")
+    "Réfectoire" = @("ynovDomaine\user_montpellier")
+    "Service Salle" = @("ynovDomaine\user_paris_ouest", "ynovDomaine\user_nice")
+    "Service Sport" = @("ynovDomaine\user_montpellier")
+}
+
+# Tableau des permissions par répertoire (ajusté avec tirets bas)
+$permissions = @(
+    @{ Repertoire = "Repertoire_1"; Direction = @("Read", "Read"); Compatibilité = @("Owner"); Commercial = @("Write", "Owner"); Technique = @("Write"); Communication = @("Read"); "Service sociale" = @("Read"); "Service enseignant" = @("Read"); Réfectoire = @("Write"); "Service Salle" = @("Write", "Write"); "Service Sport" = @("Owner") },
+    @{ Repertoire = "Repertoire_2"; Direction = @("Read", "Write"); Compatibilité = @("Read"); Commercial = @("Read", "Read/Write"); Technique = @("Read"); Communication = @("Read"); "Service sociale" = @("Read"); "Service enseignant" = @("Read"); Réfectoire = @("Write"); "Service Salle" = @("Write", "Write"); "Service Sport" = @("Read") },
+    @{ Repertoire = "Repertoire_3"; Direction = @("Write", "Write"); Compatibilité = @("Read"); Commercial = @("Read", "Read"); Technique = @("Read/Write"); Communication = @("Read"); "Service sociale" = @("Read"); "Service enseignant" = @("Read/Write"); Réfectoire = @("Write"); "Service Salle" = @("Write", "Read/Write"); "Service Sport" = @("Read") },
+    @{ Repertoire = "Repertoire_4"; Direction = @("Write", "Read"); Compatibilité = @("Read/Write"); Commercial = @("Read/Write", "Write"); Technique = @("Read"); Communication = @("Write"); "Service sociale" = @("Read"); "Service enseignant" = @("Read"); Réfectoire = @("Read/Write"); "Service Salle" = @("Read", "Read"); "Service Sport" = @("Read/Write") },
+    @{ Repertoire = "Repertoire_5"; Direction = @("Read", "Owner"); Compatibilité = @("Write"); Commercial = @("Read", "Owner"); Technique = @("Write"); Communication = @("Read"); "Service sociale" = @("Write"); "Service enseignant" = @("Read/Write"); Réfectoire = @("Write"); "Service Salle" = @("Write", "Write"); "Service Sport" = @("Write") },
+    @{ Repertoire = "Repertoire_6"; Direction = @("Read", "Read/Write"); Compatibilité = @("Owner"); Commercial = @("Write", "Read/Write"); Technique = @("Read"); Communication = @("Write"); "Service sociale" = @("Write"); "Service enseignant" = @("Read"); Réfectoire = @("Read"); "Service Salle" = @("Read/Write", "Read"); "Service Sport" = @("Read/Write") },
+    @{ Repertoire = "Repertoire_7"; Direction = @("Owner", "Read"); Compatibilité = @("Read"); Commercial = @("Read/Write", "Write"); Technique = @("Read"); Communication = @("Read/Write"); "Service sociale" = @("Write"); "Service enseignant" = @("Read"); Réfectoire = @("Read"); "Service Salle" = @("Read", "Read"); "Service Sport" = @("Read") },
+    @{ Repertoire = "Repertoire_8"; Direction = @("Owner", "Write"); Compatibilité = @("Read"); Commercial = @("Read", "Owner"); Technique = @("Read"); Communication = @("Owner"); "Service sociale" = @("Owner"); "Service enseignant" = @("Read/Write"); Réfectoire = @("Read/Write"); "Service Salle" = @("Owner", "Read/Write"); "Service Sport" = @("Read") },
+    @{ Repertoire = "Repertoire_9"; Direction = @("Read", "Read/Write"); Compatibilité = @("Read/Write"); Commercial = @("Read", "Read"); Technique = @("Read"); Communication = @("Read"); "Service sociale" = @("Read/Write"); "Service enseignant" = @("Owner"); Réfectoire = @("Write"); "Service Salle" = @("Read", "Write"); "Service Sport" = @("Write") },
+    @{ Repertoire = "Repertoire_10"; Direction = @("Read", "Read"); Compatibilité = @("Write"); Commercial = @("Write", "Read"); Technique = @("Write"); Communication = @("Read"); "Service sociale" = @("Read"); "Service enseignant" = @("Read"); Réfectoire = @("Read"); "Service Salle" = @("Write", "Read"); "Service Sport" = @("Read") },
+    @{ Repertoire = "Repertoire_11"; Direction = @("Read", "Write"); Compatibilité = @("Owner"); Commercial = @("Owner", "Write"); Technique = @("Read"); Communication = @("Owner"); "Service sociale" = @("Write"); "Service enseignant" = @("Write"); Réfectoire = @("Write"); "Service Salle" = @("Owner", "Write"); "Service Sport" = @("Read") },
+    @{ Repertoire = "Repertoire_12"; Direction = @("Read/Write", "Read"); Compatibilité = @("Read"); Commercial = @("Read", "Read/Write"); Technique = @("Read"); Communication = @("Write"); "Service sociale" = @("Read"); "Service enseignant" = @("Read"); Réfectoire = @("Read"); "Service Salle" = @("Read", "Read"); "Service Sport" = @("Read") },
+    @{ Repertoire = "Repertoire_13"; Direction = @("Write", "Write"); Compatibilité = @("Read"); Commercial = @("Read", "Read"); Technique = @("Read/Write"); Communication = @("Read/Write"); "Service sociale" = @("Read"); "Service enseignant" = @("Write"); Réfectoire = @("Write"); "Service Salle" = @("Read/Write", "Write"); "Service Sport" = @("Write") },
+    @{ Repertoire = "Repertoire_14"; Direction = @("Write", "Read"); Compatibilité = @("Read/Write"); Commercial = @("Read/Write", "Write"); Technique = @("Read"); Communication = @("Write"); "Service sociale" = @("Read"); "Service enseignant" = @("Owner"); Réfectoire = @("Owner"); "Service Salle" = @("Write", "Owner"); "Service Sport" = @("Owner") },
+    @{ Repertoire = "Repertoire_15"; Direction = @("Read", "Owner"); Compatibilité = @("Write"); Commercial = @("Read", "Owner"); Technique = @("Owner"); Communication = @("Read"); "Service sociale" = @("Write"); "Service enseignant" = @("Read"); Réfectoire = @("Read"); "Service Salle" = @("Read", "Read"); "Service Sport" = @("Read") },
+    @{ Repertoire = "Repertoire_16"; Direction = @("Read", "Read/Write"); Compatibilité = @("Owner"); Commercial = @("Write", "Read"); Technique = @("Read/Write"); Communication = @("Read"); "Service sociale" = @("Read"); "Service enseignant" = @("Write"); Réfectoire = @("Write"); "Service Salle" = @("Write", "Write"); "Service Sport" = @("Write") },
+    @{ Repertoire = "Repertoire_17"; Direction = @("Read", "Read"); Compatibilité = @("Read"); Commercial = @("Read/Write", "Write"); Technique = @("Owner"); Communication = @("Write"); "Service sociale" = @("Read"); "Service enseignant" = @("Read"); Réfectoire = @("Read"); "Service Salle" = @("Read", "Read"); "Service Sport" = @("Read") },
+    @{ Repertoire = "Repertoire_18"; Direction = @("Write", "Write"); Compatibilité = @("Read"); Commercial = @("Read", "Owner"); Technique = @("Read"); Communication = @("Read"); "Service sociale" = @("Read"); "Service enseignant" = @("Read"); Réfectoire = @("Read"); "Service Salle" = @("Read", "Read"); "Service Sport" = @("Read") },
+    @{ Repertoire = "Repertoire_19"; Direction = @("Read", "Read"); Compatibilité = @("Write"); Commercial = @("Read/Write", "Read"); Technique = @("Write"); Communication = @("Read"); "Service sociale" = @("Write"); "Service enseignant" = @("Write"); Réfectoire = @("Read/Write"); "Service Salle" = @("Read/Write", "Write"); "Service Sport" = @("Read/Write") },
+    @{ Repertoire = "Repertoire_20"; Direction = @("Read", "Owner"); Compatibilité = @("Read"); Commercial = @("Write", "Read"); Technique = @("Read"); Communication = @("Read"); "Service sociale" = @("Read"); "Service enseignant" = @("Owner"); Réfectoire = @("Read"); "Service Salle" = @("Write", "Owner"); "Service Sport" = @("Read") }
+)
+
+# Applique les permissions NTFS et de partage
+foreach ($perm in $permissions) {
+    $repertoire = $perm.Repertoire
+    $path = "C:\Shares\$repertoire"
+    $userIndex = 0
+
+    foreach ($ou in $users.Keys) {
+        $ouUsers = $users[$ou]
+        $ouPerms = $perm.$ou
+
+        foreach ($user in $ouUsers) {
+            if ($ouPerms[$userIndex]) {
+                $permission = $ouPerms[$userIndex]
+                # Permissions NTFS
+                $acl = Get-Acl -Path $path
+                if ($permission -eq "Owner") { $ntfsRight = "FullControl" } elseif ($permission -eq "Read/Write") { $ntfsRight = "Modify" } elseif ($permission -eq "Read") { $ntfsRight = "ReadAndExecute" } elseif ($permission -eq "Write") { $ntfsRight = "Modify" } else { $ntfsRight = "FullControl" }
+                $accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule($user, $ntfsRight, "ContainerInherit, ObjectInherit", "None", "Allow")
+                $acl.AddAccessRule($accessRule)
+                Set-Acl -Path $path -AclObject $acl
+                Write-Host "Permission NTFS $ntfsRight ajoutée pour $user sur $path"
+
+                # Permissions de partage (SMB)
+                if ($permission -eq "Owner" -or $permission -eq "FullControl") {
+                    Grant-SmbShareAccess -Name $repertoire -AccountName $user -AccessRight Full -Force
+                } elseif ($permission -eq "Read") {
+                    Grant-SmbShareAccess -Name $repertoire -AccountName $user -AccessRight Read -Force
+                } elseif ($permission -eq "Read/Write" -or $permission -eq "Write") {
+                    Grant-SmbShareAccess -Name $repertoire -AccountName $user -AccessRight Change -Force
+                }
+                Write-Host "Permission de partage $permission ajoutée pour $user sur \\ynovLAxelserver\$repertoire"
+            }
+            $userIndex++
+        }
+        $userIndex = 0
+    }
+}
+Permission NTFS FullControl ajoutée pour ynovDomaine\user_lyon sur C:\Shares\Repertoire_1
+
+Permission de partage Owner ajoutée pour ynovDomaine\user_lyon sur \\ynovLAxelserver\Repertoire_1
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_1
+Permission de partage Read ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_1
+Permission NTFS FullControl ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_1
+Permission de partage Owner ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_1
+Permission NTFS Modify ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_1
+Permission de partage Write ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_1
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_lille sur C:\Shares\Repertoire_1
+Permission de partage Read ajoutée pour ynovDomaine\user_lille sur \\ynovLAxelserver\Repertoire_1
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_1
+Name         ScopeName AccountName                  AccessControlType AccessRight
+----         --------- -----------                  ----------------- -----------
+Repertoire_1 *         Tout le monde                Allow             Full       
+Repertoire_1 *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoire_1 *         Tout le monde                Allow             Full       
+Repertoire_1 *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoire_1 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_1 *         Tout le monde                Allow             Full       
+Repertoire_1 *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoire_1 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_1 *         YNOVDOMAINE\user_montpellier Allow             Full       
+Repertoire_1 *         Tout le monde                Allow             Full       
+Repertoire_1 *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoire_1 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_1 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_1 *         Tout le monde                Allow             Full       
+Repertoire_1 *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoire_1 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_1 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_1 *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoire_1 *         Tout le monde                Allow             Full       
+Repertoire_1 *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoire_1 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_1 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_1 *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoire_1 *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_1
+Permission NTFS Modify ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_1
+Repertoire_1 *         Tout le monde                Allow             Full       
+Repertoire_1 *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoire_1 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_1 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_1 *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoire_1 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_1
+Permission NTFS Modify ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_1
+Repertoire_1 *         Tout le monde                Allow             Full       
+Repertoire_1 *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoire_1 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_1 *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoire_1 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoire_1 *         YNOVDOMAINE\user_nice        Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_1
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest1 sur C:\Shares\Repertoire_1
+Repertoire_1 *         Tout le monde                Allow             Full       
+Repertoire_1 *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoire_1 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_1 *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoire_1 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoire_1 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_1 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest1 sur \\ynovLAxelserver\Repertoire_1
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest2 sur C:\Shares\Repertoire_1
+Repertoire_1 *         Tout le monde                Allow             Full       
+Repertoire_1 *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoire_1 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_1 *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoire_1 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoire_1 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_1 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoire_1 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest2 sur \\ynovLAxelserver\Repertoire_1
+Permission NTFS Modify ajoutée pour ynovDomaine\user_toulouse1 sur C:\Shares\Repertoire_1
+Repertoire_1 *         Tout le monde                Allow             Full       
+Repertoire_1 *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoire_1 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_1 *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoire_1 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoire_1 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_1 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoire_1 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoire_1 *         YNOVDOMAINE\user_toulouse1   Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_toulouse1 sur \\ynovLAxelserver\Repertoire_1
+Permission NTFS FullControl ajoutée pour ynovDomaine\user_toulouse2 sur C:\Shares\Repertoire_1
+Repertoire_1 *         Tout le monde                Allow             Full       
+Repertoire_1 *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoire_1 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_1 *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoire_1 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoire_1 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_1 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoire_1 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoire_1 *         YNOVDOMAINE\user_toulouse1   Allow             Change     
+Repertoire_1 *         YNOVDOMAINE\user_toulouse2   Allow             Full       
+Permission de partage Owner ajoutée pour ynovDomaine\user_toulouse2 sur \\ynovLAxelserver\Repertoire_1
+Permission NTFS Modify ajoutée pour ynovDomaine\user_aix sur C:\Shares\Repertoire_1
+Repertoire_1 *         Tout le monde                Allow             Full       
+Repertoire_1 *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoire_1 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_1 *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoire_1 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoire_1 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_1 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoire_1 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoire_1 *         YNOVDOMAINE\user_toulouse1   Allow             Change     
+Repertoire_1 *         YNOVDOMAINE\user_toulouse2   Allow             Full       
+Repertoire_1 *         YNOVDOMAINE\user_aix         Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_aix sur \\ynovLAxelserver\Repertoire_1
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_lyon sur C:\Shares\Repertoire_2
+Repertoire_2 *         Tout le monde                Allow             Full       
+Repertoire_2 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_lyon sur \\ynovLAxelserver\Repertoire_2
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_2
+Repertoire_2 *         Tout le monde                Allow             Full       
+Repertoire_2 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_2 *         YNOVDOMAINE\user_nice        Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_2
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_2
+Repertoire_2 *         Tout le monde                Allow             Full       
+Repertoire_2 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_2 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_2 *         YNOVDOMAINE\user_montpellier Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_2
+Permission NTFS Modify ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_2
+Repertoire_2 *         Tout le monde                Allow             Full       
+Repertoire_2 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_2 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_2 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_2
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_lille sur C:\Shares\Repertoire_2
+Repertoire_2 *         Tout le monde                Allow             Full       
+Repertoire_2 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_2 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_2 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_2 *         YNOVDOMAINE\user_lille       Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_lille sur \\ynovLAxelserver\Repertoire_2
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_2
+Repertoire_2 *         Tout le monde                Allow             Full       
+Repertoire_2 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_2 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_2 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_2 *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoire_2 *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_2
+Permission NTFS Modify ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_2
+Repertoire_2 *         Tout le monde                Allow             Full       
+Repertoire_2 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_2 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_2 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_2 *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoire_2 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_2
+Permission NTFS Modify ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_2
+Repertoire_2 *         Tout le monde                Allow             Full       
+Repertoire_2 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_2 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_2 *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoire_2 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoire_2 *         YNOVDOMAINE\user_nice        Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_2
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest1 sur C:\Shares\Repertoire_2
+Repertoire_2 *         Tout le monde                Allow             Full       
+Repertoire_2 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_2 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_2 *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoire_2 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoire_2 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_2 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest1 sur \\ynovLAxelserver\Repertoire_2
+Permission NTFS Modify ajoutée pour ynovDomaine\user_paris_ouest2 sur C:\Shares\Repertoire_2
+Repertoire_2 *         Tout le monde                Allow             Full       
+Repertoire_2 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_2 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_2 *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoire_2 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoire_2 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_2 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoire_2 *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_paris_ouest2 sur \\ynovLAxelserver\Repertoire_2
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_toulouse1 sur C:\Shares\Repertoire_2
+Repertoire_2 *         Tout le monde                Allow             Full       
+Repertoire_2 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_2 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_2 *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoire_2 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoire_2 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_2 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoire_2 *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoire_2 *         YNOVDOMAINE\user_toulouse1   Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_toulouse1 sur \\ynovLAxelserver\Repertoire_2
+Permission NTFS Modify ajoutée pour ynovDomaine\user_toulouse2 sur C:\Shares\Repertoire_2
+Repertoire_2 *         Tout le monde                Allow             Full       
+Repertoire_2 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_2 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_2 *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoire_2 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoire_2 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_2 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoire_2 *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoire_2 *         YNOVDOMAINE\user_toulouse1   Allow             Read       
+Repertoire_2 *         YNOVDOMAINE\user_toulouse2   Allow             Change     
+Permission de partage Read/Write ajoutée pour ynovDomaine\user_toulouse2 sur \\ynovLAxelserver\Repertoire_2
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_aix sur C:\Shares\Repertoire_2
+Repertoire_2 *         Tout le monde                Allow             Full       
+Repertoire_2 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_2 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_2 *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoire_2 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoire_2 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_2 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoire_2 *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoire_2 *         YNOVDOMAINE\user_toulouse1   Allow             Read       
+Repertoire_2 *         YNOVDOMAINE\user_toulouse2   Allow             Change     
+Repertoire_2 *         YNOVDOMAINE\user_aix         Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_aix sur \\ynovLAxelserver\Repertoire_2
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_lyon sur C:\Shares\Repertoire_3
+Repertoire_3 *         Tout le monde                Allow             Full       
+Repertoire_3 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_lyon sur \\ynovLAxelserver\Repertoire_3
+Permission NTFS Modify ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_3
+Repertoire_3 *         Tout le monde                Allow             Full       
+Repertoire_3 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_3 *         YNOVDOMAINE\user_nice        Allow             Change     
+Permission de partage Read/Write ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_3
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_3
+Repertoire_3 *         Tout le monde                Allow             Full       
+Repertoire_3 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_3 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_3 *         YNOVDOMAINE\user_montpellier Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_3
+Permission NTFS Modify ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_3
+Repertoire_3 *         Tout le monde                Allow             Full       
+Repertoire_3 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_3 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_3 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_3
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_lille sur C:\Shares\Repertoire_3
+Repertoire_3 *         Tout le monde                Allow             Full       
+Repertoire_3 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_3 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_3 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_3 *         YNOVDOMAINE\user_lille       Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_lille sur \\ynovLAxelserver\Repertoire_3
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_3
+Repertoire_3 *         Tout le monde                Allow             Full       
+Repertoire_3 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_3 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_3 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_3 *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoire_3 *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_3
+Permission NTFS Modify ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_3
+Repertoire_3 *         Tout le monde                Allow             Full       
+Repertoire_3 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_3 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_3 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_3 *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoire_3 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_3
+Permission NTFS Modify ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_3
+Repertoire_3 *         Tout le monde                Allow             Full       
+Repertoire_3 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_3 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_3 *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoire_3 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoire_3 *         YNOVDOMAINE\user_nice        Allow             Change     
+Permission de partage Read/Write ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_3
+Permission NTFS Modify ajoutée pour ynovDomaine\user_paris_ouest1 sur C:\Shares\Repertoire_3
+Repertoire_3 *         Tout le monde                Allow             Full       
+Repertoire_3 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_3 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_3 *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoire_3 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoire_3 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_3 *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_paris_ouest1 sur \\ynovLAxelserver\Repertoire_3
+Permission NTFS Modify ajoutée pour ynovDomaine\user_paris_ouest2 sur C:\Shares\Repertoire_3
+Repertoire_3 *         Tout le monde                Allow             Full       
+Repertoire_3 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_3 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_3 *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoire_3 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoire_3 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_3 *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoire_3 *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_paris_ouest2 sur \\ynovLAxelserver\Repertoire_3
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_toulouse1 sur C:\Shares\Repertoire_3
+Repertoire_3 *         Tout le monde                Allow             Full       
+Repertoire_3 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_3 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_3 *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoire_3 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoire_3 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_3 *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoire_3 *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoire_3 *         YNOVDOMAINE\user_toulouse1   Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_toulouse1 sur \\ynovLAxelserver\Repertoire_3
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_toulouse2 sur C:\Shares\Repertoire_3
+Repertoire_3 *         Tout le monde                Allow             Full       
+Repertoire_3 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_3 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_3 *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoire_3 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoire_3 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_3 *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoire_3 *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoire_3 *         YNOVDOMAINE\user_toulouse1   Allow             Read       
+Repertoire_3 *         YNOVDOMAINE\user_toulouse2   Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_toulouse2 sur \\ynovLAxelserver\Repertoire_3
+Permission NTFS Modify ajoutée pour ynovDomaine\user_aix sur C:\Shares\Repertoire_3
+Repertoire_3 *         Tout le monde                Allow             Full       
+Repertoire_3 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_3 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_3 *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoire_3 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoire_3 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_3 *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoire_3 *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoire_3 *         YNOVDOMAINE\user_toulouse1   Allow             Read       
+Repertoire_3 *         YNOVDOMAINE\user_toulouse2   Allow             Read       
+Repertoire_3 *         YNOVDOMAINE\user_aix         Allow             Change     
+Permission de partage Read/Write ajoutée pour ynovDomaine\user_aix sur \\ynovLAxelserver\Repertoire_3
+Permission NTFS Modify ajoutée pour ynovDomaine\user_lyon sur C:\Shares\Repertoire_4
+Repertoire_4 *         Tout le monde                Allow             Full       
+Repertoire_4 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Permission de partage Read/Write ajoutée pour ynovDomaine\user_lyon sur \\ynovLAxelserver\Repertoire_4
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_4
+Repertoire_4 *         Tout le monde                Allow             Full       
+Repertoire_4 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_4 *         YNOVDOMAINE\user_nice        Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_4
+Permission NTFS Modify ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_4
+Repertoire_4 *         Tout le monde                Allow             Full       
+Repertoire_4 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_4 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_4 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Permission de partage Read/Write ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_4
+Permission NTFS Modify ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_4
+Repertoire_4 *         Tout le monde                Allow             Full       
+Repertoire_4 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_4 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_4 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Permission de partage Read/Write ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_4
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_lille sur C:\Shares\Repertoire_4
+Repertoire_4 *         Tout le monde                Allow             Full       
+Repertoire_4 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_4 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_4 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_4 *         YNOVDOMAINE\user_lille       Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_lille sur \\ynovLAxelserver\Repertoire_4
+Permission NTFS Modify ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_4
+Repertoire_4 *         Tout le monde                Allow             Full       
+Repertoire_4 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_4 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_4 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_4 *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoire_4 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_4
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_4
+Repertoire_4 *         Tout le monde                Allow             Full       
+Repertoire_4 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_4 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_4 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_4 *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoire_4 *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_4
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_4
+Repertoire_4 *         Tout le monde                Allow             Full       
+Repertoire_4 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_4 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_4 *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoire_4 *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoire_4 *         YNOVDOMAINE\user_nice        Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_4
+Permission NTFS Modify ajoutée pour ynovDomaine\user_paris_ouest1 sur C:\Shares\Repertoire_4
+Repertoire_4 *         Tout le monde                Allow             Full       
+Repertoire_4 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_4 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_4 *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoire_4 *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoire_4 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_4 *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_paris_ouest1 sur \\ynovLAxelserver\Repertoire_4
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest2 sur C:\Shares\Repertoire_4
+Repertoire_4 *         Tout le monde                Allow             Full       
+Repertoire_4 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_4 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_4 *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoire_4 *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoire_4 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_4 *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoire_4 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest2 sur \\ynovLAxelserver\Repertoire_4
+Permission NTFS Modify ajoutée pour ynovDomaine\user_toulouse1 sur C:\Shares\Repertoire_4
+Repertoire_4 *         Tout le monde                Allow             Full       
+Repertoire_4 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_4 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_4 *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoire_4 *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoire_4 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_4 *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoire_4 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoire_4 *         YNOVDOMAINE\user_toulouse1   Allow             Change     
+Permission de partage Read/Write ajoutée pour ynovDomaine\user_toulouse1 sur \\ynovLAxelserver\Repertoire_4
+Permission NTFS Modify ajoutée pour ynovDomaine\user_toulouse2 sur C:\Shares\Repertoire_4
+Repertoire_4 *         Tout le monde                Allow             Full       
+Repertoire_4 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_4 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_4 *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoire_4 *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoire_4 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_4 *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoire_4 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoire_4 *         YNOVDOMAINE\user_toulouse1   Allow             Change     
+Repertoire_4 *         YNOVDOMAINE\user_toulouse2   Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_toulouse2 sur \\ynovLAxelserver\Repertoire_4
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_aix sur C:\Shares\Repertoire_4
+Repertoire_4 *         Tout le monde                Allow             Full       
+Repertoire_4 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_4 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_4 *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoire_4 *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoire_4 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_4 *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoire_4 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoire_4 *         YNOVDOMAINE\user_toulouse1   Allow             Change     
+Repertoire_4 *         YNOVDOMAINE\user_toulouse2   Allow             Change     
+Repertoire_4 *         YNOVDOMAINE\user_aix         Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_aix sur \\ynovLAxelserver\Repertoire_4
+Permission NTFS Modify ajoutée pour ynovDomaine\user_lyon sur C:\Shares\Repertoire_5
+Repertoire_5 *         Tout le monde                Allow             Full       
+Repertoire_5 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_lyon sur \\ynovLAxelserver\Repertoire_5
+Permission NTFS Modify ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_5
+Repertoire_5 *         Tout le monde                Allow             Full       
+Repertoire_5 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_nice        Allow             Change     
+Permission de partage Read/Write ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_5
+Permission NTFS Modify ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_5
+Repertoire_5 *         Tout le monde                Allow             Full       
+Repertoire_5 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_5
+Permission NTFS Modify ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_5
+Repertoire_5 *         Tout le monde                Allow             Full       
+Repertoire_5 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_5
+Permission NTFS Modify ajoutée pour ynovDomaine\user_lille sur C:\Shares\Repertoire_5
+Repertoire_5 *         Tout le monde                Allow             Full       
+Repertoire_5 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_lille       Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_lille sur \\ynovLAxelserver\Repertoire_5
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_5
+Repertoire_5 *         Tout le monde                Allow             Full       
+Repertoire_5 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_5
+Permission NTFS Modify ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_5
+Repertoire_5 *         Tout le monde                Allow             Full       
+Repertoire_5 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_5
+Permission NTFS Modify ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_5
+Repertoire_5 *         Tout le monde                Allow             Full       
+Repertoire_5 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_nice        Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_5
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest1 sur C:\Shares\Repertoire_5
+Repertoire_5 *         Tout le monde                Allow             Full       
+Repertoire_5 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest1 sur \\ynovLAxelserver\Repertoire_5
+Permission NTFS FullControl ajoutée pour ynovDomaine\user_paris_ouest2 sur C:\Shares\Repertoire_5
+Repertoire_5 *         Tout le monde                Allow             Full       
+Repertoire_5 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoire_5 *         YNOVDOMAINE\user_paris_ou... Allow             Full       
+Permission de partage Owner ajoutée pour ynovDomaine\user_paris_ouest2 sur \\ynovLAxelserver\Repertoire_5
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_toulouse1 sur C:\Shares\Repertoire_5
+Repertoire_5 *         Tout le monde                Allow             Full       
+Repertoire_5 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoire_5 *         YNOVDOMAINE\user_paris_ou... Allow             Full       
+Repertoire_5 *         YNOVDOMAINE\user_toulouse1   Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_toulouse1 sur \\ynovLAxelserver\Repertoire_5
+Permission NTFS FullControl ajoutée pour ynovDomaine\user_toulouse2 sur C:\Shares\Repertoire_5
+Repertoire_5 *         Tout le monde                Allow             Full       
+Repertoire_5 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoire_5 *         YNOVDOMAINE\user_paris_ou... Allow             Full       
+Repertoire_5 *         YNOVDOMAINE\user_toulouse1   Allow             Read       
+Repertoire_5 *         YNOVDOMAINE\user_toulouse2   Allow             Full       
+Permission de partage Owner ajoutée pour ynovDomaine\user_toulouse2 sur \\ynovLAxelserver\Repertoire_5
+Permission NTFS Modify ajoutée pour ynovDomaine\user_aix sur C:\Shares\Repertoire_5
+Repertoire_5 *         Tout le monde                Allow             Full       
+Repertoire_5 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_5 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoire_5 *         YNOVDOMAINE\user_paris_ou... Allow             Full       
+Repertoire_5 *         YNOVDOMAINE\user_toulouse1   Allow             Read       
+Repertoire_5 *         YNOVDOMAINE\user_toulouse2   Allow             Full       
+Repertoire_5 *         YNOVDOMAINE\user_aix         Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_aix sur \\ynovLAxelserver\Repertoire_5
+Permission NTFS FullControl ajoutée pour ynovDomaine\user_lyon sur C:\Shares\Repertoire_6
+Repertoire_6 *         Tout le monde                Allow             Full       
+Repertoire_6 *         YNOVDOMAINE\user_lyon        Allow             Full       
+Permission de partage Owner ajoutée pour ynovDomaine\user_lyon sur \\ynovLAxelserver\Repertoire_6
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_6
+Repertoire_6 *         Tout le monde                Allow             Full       
+Repertoire_6 *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoire_6 *         YNOVDOMAINE\user_nice        Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_6
+Permission NTFS Modify ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_6
+Repertoire_6 *         Tout le monde                Allow             Full       
+Repertoire_6 *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoire_6 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_6 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Permission de partage Read/Write ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_6
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_6
+Repertoire_6 *         Tout le monde                Allow             Full       
+Repertoire_6 *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoire_6 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_6 *         YNOVDOMAINE\user_montpellier Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_6
+Permission NTFS Modify ajoutée pour ynovDomaine\user_lille sur C:\Shares\Repertoire_6
+Repertoire_6 *         Tout le monde                Allow             Full       
+Repertoire_6 *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoire_6 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_6 *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoire_6 *         YNOVDOMAINE\user_lille       Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_lille sur \\ynovLAxelserver\Repertoire_6
+Permission NTFS Modify ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_6
+Repertoire_6 *         Tout le monde                Allow             Full       
+Repertoire_6 *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoire_6 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_6 *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoire_6 *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoire_6 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_6
+Permission NTFS Modify ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_6
+Repertoire_6 *         Tout le monde                Allow             Full       
+Repertoire_6 *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoire_6 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_6 *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoire_6 *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoire_6 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Permission de partage Read/Write ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_6
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_6
+Repertoire_6 *         Tout le monde                Allow             Full       
+Repertoire_6 *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoire_6 *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoire_6 *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoire_6 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoire_6 *         YNOVDOMAINE\user_nice        Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_6
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest1 sur C:\Shares\Repertoire_6
+Repertoire_6 *         Tout le monde                Allow             Full       
+Repertoire_6 *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoire_6 *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoire_6 *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoire_6 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoire_6 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_6 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest1 sur \\ynovLAxelserver\Repertoire_6
+Permission NTFS Modify ajoutée pour ynovDomaine\user_paris_ouest2 sur C:\Shares\Repertoire_6
+Repertoire_6 *         Tout le monde                Allow             Full       
+Repertoire_6 *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoire_6 *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoire_6 *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoire_6 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoire_6 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_6 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoire_6 *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Permission de partage Read/Write ajoutée pour ynovDomaine\user_paris_ouest2 sur \\ynovLAxelserver\Repertoire_6
+Permission NTFS Modify ajoutée pour ynovDomaine\user_toulouse1 sur C:\Shares\Repertoire_6
+Repertoire_6 *         Tout le monde                Allow             Full       
+Repertoire_6 *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoire_6 *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoire_6 *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoire_6 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoire_6 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_6 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoire_6 *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoire_6 *         YNOVDOMAINE\user_toulouse1   Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_toulouse1 sur \\ynovLAxelserver\Repertoire_6
+Permission NTFS Modify ajoutée pour ynovDomaine\user_toulouse2 sur C:\Shares\Repertoire_6
+Repertoire_6 *         Tout le monde                Allow             Full       
+Repertoire_6 *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoire_6 *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoire_6 *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoire_6 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoire_6 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_6 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoire_6 *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoire_6 *         YNOVDOMAINE\user_toulouse1   Allow             Change     
+Repertoire_6 *         YNOVDOMAINE\user_toulouse2   Allow             Change     
+Permission de partage Read/Write ajoutée pour ynovDomaine\user_toulouse2 sur \\ynovLAxelserver\Repertoire_6
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_aix sur C:\Shares\Repertoire_6
+Repertoire_6 *         Tout le monde                Allow             Full       
+Repertoire_6 *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoire_6 *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoire_6 *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoire_6 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoire_6 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_6 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoire_6 *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoire_6 *         YNOVDOMAINE\user_toulouse1   Allow             Change     
+Repertoire_6 *         YNOVDOMAINE\user_toulouse2   Allow             Change     
+Repertoire_6 *         YNOVDOMAINE\user_aix         Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_aix sur \\ynovLAxelserver\Repertoire_6
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_lyon sur C:\Shares\Repertoire_7
+Repertoire_7 *         Tout le monde                Allow             Full       
+Repertoire_7 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_lyon sur \\ynovLAxelserver\Repertoire_7
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_7
+Repertoire_7 *         Tout le monde                Allow             Full       
+Repertoire_7 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_nice        Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_7
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_7
+Repertoire_7 *         Tout le monde                Allow             Full       
+Repertoire_7 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_montpellier Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_7
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_7
+Repertoire_7 *         Tout le monde                Allow             Full       
+Repertoire_7 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_montpellier Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_7
+Permission NTFS Modify ajoutée pour ynovDomaine\user_lille sur C:\Shares\Repertoire_7
+Repertoire_7 *         Tout le monde                Allow             Full       
+Repertoire_7 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_lille       Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_lille sur \\ynovLAxelserver\Repertoire_7
+Permission NTFS Modify ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_7
+Repertoire_7 *         Tout le monde                Allow             Full       
+Repertoire_7 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoire_7 *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Permission de partage Read/Write ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_7
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_7
+Repertoire_7 *         Tout le monde                Allow             Full       
+Repertoire_7 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoire_7 *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_7
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_7
+Repertoire_7 *         Tout le monde                Allow             Full       
+Repertoire_7 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoire_7 *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_nice        Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_7
+Permission NTFS FullControl ajoutée pour ynovDomaine\user_paris_ouest1 sur C:\Shares\Repertoire_7
+Repertoire_7 *         Tout le monde                Allow             Full       
+Repertoire_7 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoire_7 *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_paris_ou... Allow             Full       
+Permission de partage Owner ajoutée pour ynovDomaine\user_paris_ouest1 sur \\ynovLAxelserver\Repertoire_7
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest2 sur C:\Shares\Repertoire_7
+Repertoire_7 *         Tout le monde                Allow             Full       
+Repertoire_7 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoire_7 *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_paris_ou... Allow             Full       
+Repertoire_7 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest2 sur \\ynovLAxelserver\Repertoire_7
+Permission NTFS Modify ajoutée pour ynovDomaine\user_toulouse1 sur C:\Shares\Repertoire_7
+Repertoire_7 *         Tout le monde                Allow             Full       
+Repertoire_7 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoire_7 *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_paris_ou... Allow             Full       
+Repertoire_7 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_toulouse1   Allow             Change     
+Permission de partage Read/Write ajoutée pour ynovDomaine\user_toulouse1 sur \\ynovLAxelserver\Repertoire_7
+Permission NTFS Modify ajoutée pour ynovDomaine\user_toulouse2 sur C:\Shares\Repertoire_7
+Repertoire_7 *         Tout le monde                Allow             Full       
+Repertoire_7 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoire_7 *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_paris_ou... Allow             Full       
+Repertoire_7 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_toulouse1   Allow             Change     
+Repertoire_7 *         YNOVDOMAINE\user_toulouse2   Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_toulouse2 sur \\ynovLAxelserver\Repertoire_7
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_aix sur C:\Shares\Repertoire_7
+Repertoire_7 *         Tout le monde                Allow             Full       
+Repertoire_7 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoire_7 *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_paris_ou... Allow             Full       
+Repertoire_7 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoire_7 *         YNOVDOMAINE\user_toulouse1   Allow             Change     
+Repertoire_7 *         YNOVDOMAINE\user_toulouse2   Allow             Change     
+Repertoire_7 *         YNOVDOMAINE\user_aix         Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_aix sur \\ynovLAxelserver\Repertoire_7
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_lyon sur C:\Shares\Repertoire_8
+Repertoire_8 *         Tout le monde                Allow             Full       
+Repertoire_8 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_lyon sur \\ynovLAxelserver\Repertoire_8
+Permission NTFS Modify ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_8
+Repertoire_8 *         Tout le monde                Allow             Full       
+Repertoire_8 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_8 *         YNOVDOMAINE\user_nice        Allow             Change     
+Permission de partage Read/Write ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_8
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_8
+Repertoire_8 *         Tout le monde                Allow             Full       
+Repertoire_8 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_8 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_8 *         YNOVDOMAINE\user_montpellier Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_8
+Permission NTFS Modify ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_8
+Repertoire_8 *         Tout le monde                Allow             Full       
+Repertoire_8 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_8 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_8 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Permission de partage Read/Write ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_8
+Permission NTFS FullControl ajoutée pour ynovDomaine\user_lille sur C:\Shares\Repertoire_8
+Repertoire_8 *         Tout le monde                Allow             Full       
+Repertoire_8 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_8 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_8 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_8 *         YNOVDOMAINE\user_lille       Allow             Full       
+Permission de partage Owner ajoutée pour ynovDomaine\user_lille sur \\ynovLAxelserver\Repertoire_8
+Permission NTFS FullControl ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_8
+Repertoire_8 *         Tout le monde                Allow             Full       
+Repertoire_8 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_8 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_8 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_8 *         YNOVDOMAINE\user_lille       Allow             Full       
+Repertoire_8 *         YNOVDOMAINE\user_paris_ouest Allow             Full       
+Permission de partage Owner ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_8
+Permission NTFS FullControl ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_8
+Repertoire_8 *         Tout le monde                Allow             Full       
+Repertoire_8 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_8 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_8 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_8 *         YNOVDOMAINE\user_lille       Allow             Full       
+Repertoire_8 *         YNOVDOMAINE\user_paris_ouest Allow             Full       
+Permission de partage Owner ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_8
+Permission NTFS Modify ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_8
+Repertoire_8 *         Tout le monde                Allow             Full       
+Repertoire_8 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_8 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_8 *         YNOVDOMAINE\user_lille       Allow             Full       
+Repertoire_8 *         YNOVDOMAINE\user_paris_ouest Allow             Full       
+Repertoire_8 *         YNOVDOMAINE\user_nice        Allow             Change     
+Permission de partage Read/Write ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_8
+Permission NTFS FullControl ajoutée pour ynovDomaine\user_paris_ouest1 sur C:\Shares\Repertoire_8
+Repertoire_8 *         Tout le monde                Allow             Full       
+Repertoire_8 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_8 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_8 *         YNOVDOMAINE\user_lille       Allow             Full       
+Repertoire_8 *         YNOVDOMAINE\user_paris_ouest Allow             Full       
+Repertoire_8 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_8 *         YNOVDOMAINE\user_paris_ou... Allow             Full       
+Permission de partage Owner ajoutée pour ynovDomaine\user_paris_ouest1 sur \\ynovLAxelserver\Repertoire_8
+Permission NTFS Modify ajoutée pour ynovDomaine\user_paris_ouest2 sur C:\Shares\Repertoire_8
+Repertoire_8 *         Tout le monde                Allow             Full       
+Repertoire_8 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_8 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_8 *         YNOVDOMAINE\user_lille       Allow             Full       
+Repertoire_8 *         YNOVDOMAINE\user_paris_ouest Allow             Full       
+Repertoire_8 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_8 *         YNOVDOMAINE\user_paris_ou... Allow             Full       
+Repertoire_8 *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_paris_ouest2 sur \\ynovLAxelserver\Repertoire_8
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_toulouse1 sur C:\Shares\Repertoire_8
+Repertoire_8 *         Tout le monde                Allow             Full       
+Repertoire_8 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_8 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_8 *         YNOVDOMAINE\user_lille       Allow             Full       
+Repertoire_8 *         YNOVDOMAINE\user_paris_ouest Allow             Full       
+Repertoire_8 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_8 *         YNOVDOMAINE\user_paris_ou... Allow             Full       
+Repertoire_8 *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoire_8 *         YNOVDOMAINE\user_toulouse1   Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_toulouse1 sur \\ynovLAxelserver\Repertoire_8
+Permission NTFS FullControl ajoutée pour ynovDomaine\user_toulouse2 sur C:\Shares\Repertoire_8
+Repertoire_8 *         Tout le monde                Allow             Full       
+Repertoire_8 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_8 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_8 *         YNOVDOMAINE\user_lille       Allow             Full       
+Repertoire_8 *         YNOVDOMAINE\user_paris_ouest Allow             Full       
+Repertoire_8 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_8 *         YNOVDOMAINE\user_paris_ou... Allow             Full       
+Repertoire_8 *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoire_8 *         YNOVDOMAINE\user_toulouse1   Allow             Read       
+Repertoire_8 *         YNOVDOMAINE\user_toulouse2   Allow             Full       
+Permission de partage Owner ajoutée pour ynovDomaine\user_toulouse2 sur \\ynovLAxelserver\Repertoire_8
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_aix sur C:\Shares\Repertoire_8
+Repertoire_8 *         Tout le monde                Allow             Full       
+Repertoire_8 *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoire_8 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_8 *         YNOVDOMAINE\user_lille       Allow             Full       
+Repertoire_8 *         YNOVDOMAINE\user_paris_ouest Allow             Full       
+Repertoire_8 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_8 *         YNOVDOMAINE\user_paris_ou... Allow             Full       
+Repertoire_8 *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoire_8 *         YNOVDOMAINE\user_toulouse1   Allow             Read       
+Repertoire_8 *         YNOVDOMAINE\user_toulouse2   Allow             Full       
+Repertoire_8 *         YNOVDOMAINE\user_aix         Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_aix sur \\ynovLAxelserver\Repertoire_8
+Permission NTFS Modify ajoutée pour ynovDomaine\user_lyon sur C:\Shares\Repertoire_9
+Repertoire_9 *         Tout le monde                Allow             Full       
+Repertoire_9 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Permission de partage Read/Write ajoutée pour ynovDomaine\user_lyon sur \\ynovLAxelserver\Repertoire_9
+Permission NTFS FullControl ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_9
+Repertoire_9 *         Tout le monde                Allow             Full       
+Repertoire_9 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_nice        Allow             Full       
+Permission de partage Owner ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_9
+Permission NTFS Modify ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_9
+Repertoire_9 *         Tout le monde                Allow             Full       
+Repertoire_9 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_nice        Allow             Full       
+Repertoire_9 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_9
+Permission NTFS Modify ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_9
+Repertoire_9 *         Tout le monde                Allow             Full       
+Repertoire_9 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_nice        Allow             Full       
+Repertoire_9 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_9
+Permission NTFS Modify ajoutée pour ynovDomaine\user_lille sur C:\Shares\Repertoire_9
+Repertoire_9 *         Tout le monde                Allow             Full       
+Repertoire_9 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_nice        Allow             Full       
+Repertoire_9 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_lille       Allow             Change     
+Permission de partage Read/Write ajoutée pour ynovDomaine\user_lille sur \\ynovLAxelserver\Repertoire_9
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_9
+Repertoire_9 *         Tout le monde                Allow             Full       
+Repertoire_9 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_nice        Allow             Full       
+Repertoire_9 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_9
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_9
+Repertoire_9 *         Tout le monde                Allow             Full       
+Repertoire_9 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_nice        Allow             Full       
+Repertoire_9 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_9
+Permission NTFS Modify ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_9
+Repertoire_9 *         Tout le monde                Allow             Full       
+Repertoire_9 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoire_9 *         YNOVDOMAINE\user_nice        Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_9
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest1 sur C:\Shares\Repertoire_9
+Repertoire_9 *         Tout le monde                Allow             Full       
+Repertoire_9 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoire_9 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest1 sur \\ynovLAxelserver\Repertoire_9
+Permission NTFS Modify ajoutée pour ynovDomaine\user_paris_ouest2 sur C:\Shares\Repertoire_9
+Repertoire_9 *         Tout le monde                Allow             Full       
+Repertoire_9 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoire_9 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoire_9 *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Permission de partage Read/Write ajoutée pour ynovDomaine\user_paris_ouest2 sur \\ynovLAxelserver\Repertoire_9
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_toulouse1 sur C:\Shares\Repertoire_9
+Repertoire_9 *         Tout le monde                Allow             Full       
+Repertoire_9 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoire_9 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoire_9 *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_toulouse1   Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_toulouse1 sur \\ynovLAxelserver\Repertoire_9
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_toulouse2 sur C:\Shares\Repertoire_9
+Repertoire_9 *         Tout le monde                Allow             Full       
+Repertoire_9 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoire_9 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoire_9 *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_toulouse1   Allow             Read       
+Repertoire_9 *         YNOVDOMAINE\user_toulouse2   Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_toulouse2 sur \\ynovLAxelserver\Repertoire_9
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_aix sur C:\Shares\Repertoire_9
+Repertoire_9 *         Tout le monde                Allow             Full       
+Repertoire_9 *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoire_9 *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoire_9 *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoire_9 *         YNOVDOMAINE\user_toulouse1   Allow             Read       
+Repertoire_9 *         YNOVDOMAINE\user_toulouse2   Allow             Read       
+Repertoire_9 *         YNOVDOMAINE\user_aix         Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_aix sur \\ynovLAxelserver\Repertoire_9
+Permission NTFS Modify ajoutée pour ynovDomaine\user_lyon sur C:\Shares\Repertoire_10
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_lyon sur \\ynovLAxelserver\Repertoire_10
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_10
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_10
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_10
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_10
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_10
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_10
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_lille sur C:\Shares\Repertoire_10
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_lille sur \\ynovLAxelserver\Repertoire_10
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_10
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_10
+Permission NTFS Modify ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_10
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_10
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_10
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_10
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest1 sur C:\Shares\Repertoire_10
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest1 sur \\ynovLAxelserver\Repertoire_10
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest2 sur C:\Shares\Repertoire_10
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest2 sur \\ynovLAxelserver\Repertoire_10
+Permission NTFS Modify ajoutée pour ynovDomaine\user_toulouse1 sur C:\Shares\Repertoire_10
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_toulouse1   Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_toulouse1 sur \\ynovLAxelserver\Repertoire_10
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_toulouse2 sur C:\Shares\Repertoire_10
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_toulouse1   Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_toulouse2   Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_toulouse2 sur \\ynovLAxelserver\Repertoire_10
+Permission NTFS Modify ajoutée pour ynovDomaine\user_aix sur C:\Shares\Repertoire_10
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_toulouse1   Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_toulouse2   Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_aix         Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_aix sur \\ynovLAxelserver\Repertoire_10
+Permission NTFS FullControl ajoutée pour ynovDomaine\user_lyon sur C:\Shares\Repertoire_11
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Full       
+Permission de partage Owner ajoutée pour ynovDomaine\user_lyon sur \\ynovLAxelserver\Repertoire_11
+Permission NTFS Modify ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_11
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_11
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_11
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_11
+Permission NTFS Modify ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_11
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_11
+Permission NTFS Modify ajoutée pour ynovDomaine\user_lille sur C:\Shares\Repertoire_11
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_lille sur \\ynovLAxelserver\Repertoire_11
+Permission NTFS FullControl ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_11
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Full       
+Permission de partage Owner ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_11
+Permission NTFS FullControl ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_11
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Full       
+Permission de partage Owner ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_11
+Permission NTFS Modify ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_11
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_11
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest1 sur C:\Shares\Repertoire_11
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest1 sur \\ynovLAxelserver\Repertoire_11
+Permission NTFS Modify ajoutée pour ynovDomaine\user_paris_ouest2 sur C:\Shares\Repertoire_11
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_paris_ouest2 sur \\ynovLAxelserver\Repertoire_11
+Permission NTFS FullControl ajoutée pour ynovDomaine\user_toulouse1 sur C:\Shares\Repertoire_11
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_toulouse1   Allow             Full       
+Permission de partage Owner ajoutée pour ynovDomaine\user_toulouse1 sur \\ynovLAxelserver\Repertoire_11
+Permission NTFS Modify ajoutée pour ynovDomaine\user_toulouse2 sur C:\Shares\Repertoire_11
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_toulouse1   Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_toulouse2   Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_toulouse2 sur \\ynovLAxelserver\Repertoire_11
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_aix sur C:\Shares\Repertoire_11
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_toulouse1   Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_toulouse2   Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_aix         Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_aix sur \\ynovLAxelserver\Repertoire_11
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_lyon sur C:\Shares\Repertoire_12
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_lyon sur \\ynovLAxelserver\Repertoire_12
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_12
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_12
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_12
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_12
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_12
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_12
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_lille sur C:\Shares\Repertoire_12
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_lille sur \\ynovLAxelserver\Repertoire_12
+Permission NTFS Modify ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_12
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_12
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_12
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_12
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_12
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_12
+Permission NTFS Modify ajoutée pour ynovDomaine\user_paris_ouest1 sur C:\Shares\Repertoire_12
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Permission de partage Read/Write ajoutée pour ynovDomaine\user_paris_ouest1 sur \\ynovLAxelserver\Repertoire_12
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest2 sur C:\Shares\Repertoire_12
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest2 sur \\ynovLAxelserver\Repertoire_12
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_toulouse1 sur C:\Shares\Repertoire_12
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_toulouse1   Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_toulouse1 sur \\ynovLAxelserver\Repertoire_12
+Permission NTFS Modify ajoutée pour ynovDomaine\user_toulouse2 sur C:\Shares\Repertoire_12
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_toulouse1   Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_toulouse2   Allow             Change     
+Permission de partage Read/Write ajoutée pour ynovDomaine\user_toulouse2 sur \\ynovLAxelserver\Repertoire_12
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_aix sur C:\Shares\Repertoire_12
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_toulouse1   Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_toulouse2   Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_aix         Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_aix sur \\ynovLAxelserver\Repertoire_12
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_lyon sur C:\Shares\Repertoire_13
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_lyon sur \\ynovLAxelserver\Repertoire_13
+Permission NTFS Modify ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_13
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_13
+Permission NTFS Modify ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_13
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_13
+Permission NTFS Modify ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_13
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_13
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_lille sur C:\Shares\Repertoire_13
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_lille sur \\ynovLAxelserver\Repertoire_13
+Permission NTFS Modify ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_13
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Permission de partage Read/Write ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_13
+Permission NTFS Modify ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_13
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Permission de partage Read/Write ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_13
+Permission NTFS Modify ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_13
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_13
+Permission NTFS Modify ajoutée pour ynovDomaine\user_paris_ouest1 sur C:\Shares\Repertoire_13
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_paris_ouest1 sur \\ynovLAxelserver\Repertoire_13
+Permission NTFS Modify ajoutée pour ynovDomaine\user_paris_ouest2 sur C:\Shares\Repertoire_13
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_paris_ouest2 sur \\ynovLAxelserver\Repertoire_13
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_toulouse1 sur C:\Shares\Repertoire_13
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_toulouse1   Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_toulouse1 sur \\ynovLAxelserver\Repertoire_13
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_toulouse2 sur C:\Shares\Repertoire_13
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_toulouse1   Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_toulouse2   Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_toulouse2 sur \\ynovLAxelserver\Repertoire_13
+Permission NTFS Modify ajoutée pour ynovDomaine\user_aix sur C:\Shares\Repertoire_13
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_toulouse1   Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_toulouse2   Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_aix         Allow             Change     
+Permission de partage Read/Write ajoutée pour ynovDomaine\user_aix sur \\ynovLAxelserver\Repertoire_13
+Permission NTFS Modify ajoutée pour ynovDomaine\user_lyon sur C:\Shares\Repertoire_14
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Permission de partage Read/Write ajoutée pour ynovDomaine\user_lyon sur \\ynovLAxelserver\Repertoire_14
+Permission NTFS FullControl ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_14
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Full       
+Permission de partage Owner ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_14
+Permission NTFS FullControl ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_14
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Full       
+Permission de partage Owner ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_14
+Permission NTFS FullControl ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_14
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Full       
+Permission de partage Owner ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_14
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_lille sur C:\Shares\Repertoire_14
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_lille sur \\ynovLAxelserver\Repertoire_14
+Permission NTFS Modify ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_14
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_14
+Permission NTFS Modify ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_14
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_14
+Permission NTFS FullControl ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_14
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Full       
+Permission de partage Owner ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_14
+Permission NTFS Modify ajoutée pour ynovDomaine\user_paris_ouest1 sur C:\Shares\Repertoire_14
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_paris_ouest1 sur \\ynovLAxelserver\Repertoire_14
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest2 sur C:\Shares\Repertoire_14
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest2 sur \\ynovLAxelserver\Repertoire_14
+Permission NTFS Modify ajoutée pour ynovDomaine\user_toulouse1 sur C:\Shares\Repertoire_14
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_toulouse1   Allow             Change     
+Permission de partage Read/Write ajoutée pour ynovDomaine\user_toulouse1 sur \\ynovLAxelserver\Repertoire_14
+Permission NTFS Modify ajoutée pour ynovDomaine\user_toulouse2 sur C:\Shares\Repertoire_14
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_toulouse1   Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_toulouse2   Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_toulouse2 sur \\ynovLAxelserver\Repertoire_14
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_aix sur C:\Shares\Repertoire_14
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_toulouse1   Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_toulouse2   Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_aix         Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_aix sur \\ynovLAxelserver\Repertoire_14
+Permission NTFS Modify ajoutée pour ynovDomaine\user_lyon sur C:\Shares\Repertoire_15
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_lyon sur \\ynovLAxelserver\Repertoire_15
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_15
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_15
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_15
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_15
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_15
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_15
+Permission NTFS Modify ajoutée pour ynovDomaine\user_lille sur C:\Shares\Repertoire_15
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_lille sur \\ynovLAxelserver\Repertoire_15
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_15
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_15
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_15
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_15
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_15
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_15
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest1 sur C:\Shares\Repertoire_15
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest1 sur \\ynovLAxelserver\Repertoire_15
+Permission NTFS FullControl ajoutée pour ynovDomaine\user_paris_ouest2 sur C:\Shares\Repertoire_15
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Full       
+Permission de partage Owner ajoutée pour ynovDomaine\user_paris_ouest2 sur \\ynovLAxelserver\Repertoire_15
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_toulouse1 sur C:\Shares\Repertoire_15
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_toulouse1   Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_toulouse1 sur \\ynovLAxelserver\Repertoire_15
+Permission NTFS FullControl ajoutée pour ynovDomaine\user_toulouse2 sur C:\Shares\Repertoire_15
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_toulouse1   Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_toulouse2   Allow             Full       
+Permission de partage Owner ajoutée pour ynovDomaine\user_toulouse2 sur \\ynovLAxelserver\Repertoire_15
+Permission NTFS FullControl ajoutée pour ynovDomaine\user_aix sur C:\Shares\Repertoire_15
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_toulouse1   Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_toulouse2   Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_aix         Allow             Full       
+Permission de partage Owner ajoutée pour ynovDomaine\user_aix sur \\ynovLAxelserver\Repertoire_15
+Permission NTFS FullControl ajoutée pour ynovDomaine\user_lyon sur C:\Shares\Repertoire_16
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Full       
+Permission de partage Owner ajoutée pour ynovDomaine\user_lyon sur \\ynovLAxelserver\Repertoire_16
+Permission NTFS Modify ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_16
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_16
+Permission NTFS Modify ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_16
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_16
+Permission NTFS Modify ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_16
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_16
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_lille sur C:\Shares\Repertoire_16
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_lille sur \\ynovLAxelserver\Repertoire_16
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_16
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_16
+Permission NTFS Modify ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_16
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_16
+Permission NTFS Modify ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_16
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_16
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest1 sur C:\Shares\Repertoire_16
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest1 sur \\ynovLAxelserver\Repertoire_16
+Permission NTFS Modify ajoutée pour ynovDomaine\user_paris_ouest2 sur C:\Shares\Repertoire_16
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Permission de partage Read/Write ajoutée pour ynovDomaine\user_paris_ouest2 sur \\ynovLAxelserver\Repertoire_16
+Permission NTFS Modify ajoutée pour ynovDomaine\user_toulouse1 sur C:\Shares\Repertoire_16
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_toulouse1   Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_toulouse1 sur \\ynovLAxelserver\Repertoire_16
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_toulouse2 sur C:\Shares\Repertoire_16
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_toulouse1   Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_toulouse2   Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_toulouse2 sur \\ynovLAxelserver\Repertoire_16
+Permission NTFS Modify ajoutée pour ynovDomaine\user_aix sur C:\Shares\Repertoire_16
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_toulouse1   Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_toulouse2   Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_aix         Allow             Change     
+Permission de partage Read/Write ajoutée pour ynovDomaine\user_aix sur \\ynovLAxelserver\Repertoire_16
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_lyon sur C:\Shares\Repertoire_17
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_lyon sur \\ynovLAxelserver\Repertoire_17
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_17
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_17
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_17
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_17
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_17
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_17
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_lille sur C:\Shares\Repertoire_17
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_lille sur \\ynovLAxelserver\Repertoire_17
+Permission NTFS Modify ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_17
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_17
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_17
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_17
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_17
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_17
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest1 sur C:\Shares\Repertoire_17
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest1 sur \\ynovLAxelserver\Repertoire_17
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest2 sur C:\Shares\Repertoire_17
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest2 sur \\ynovLAxelserver\Repertoire_17
+Permission NTFS Modify ajoutée pour ynovDomaine\user_toulouse1 sur C:\Shares\Repertoire_17
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_toulouse1   Allow             Change     
+Permission de partage Read/Write ajoutée pour ynovDomaine\user_toulouse1 sur \\ynovLAxelserver\Repertoire_17
+Permission NTFS Modify ajoutée pour ynovDomaine\user_toulouse2 sur C:\Shares\Repertoire_17
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_toulouse1   Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_toulouse2   Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_toulouse2 sur \\ynovLAxelserver\Repertoire_17
+Permission NTFS FullControl ajoutée pour ynovDomaine\user_aix sur C:\Shares\Repertoire_17
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_toulouse1   Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_toulouse2   Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_aix         Allow             Full       
+Permission de partage Owner ajoutée pour ynovDomaine\user_aix sur \\ynovLAxelserver\Repertoire_17
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_lyon sur C:\Shares\Repertoire_18
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_lyon sur \\ynovLAxelserver\Repertoire_18
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_18
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_18
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_18
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_18
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_18
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_18
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_lille sur C:\Shares\Repertoire_18
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_lille sur \\ynovLAxelserver\Repertoire_18
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_18
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_18
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_18
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_18
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_18
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_18
+Permission NTFS Modify ajoutée pour ynovDomaine\user_paris_ouest1 sur C:\Shares\Repertoire_18
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_paris_ouest1 sur \\ynovLAxelserver\Repertoire_18
+Permission NTFS Modify ajoutée pour ynovDomaine\user_paris_ouest2 sur C:\Shares\Repertoire_18
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_paris_ouest2 sur \\ynovLAxelserver\Repertoire_18
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_toulouse1 sur C:\Shares\Repertoire_18
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_toulouse1   Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_toulouse1 sur \\ynovLAxelserver\Repertoire_18
+Permission NTFS FullControl ajoutée pour ynovDomaine\user_toulouse2 sur C:\Shares\Repertoire_18
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_toulouse1   Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_toulouse2   Allow             Full       
+Permission de partage Owner ajoutée pour ynovDomaine\user_toulouse2 sur \\ynovLAxelserver\Repertoire_18
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_aix sur C:\Shares\Repertoire_18
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_toulouse1   Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_toulouse2   Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_aix         Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_aix sur \\ynovLAxelserver\Repertoire_18
+Permission NTFS Modify ajoutée pour ynovDomaine\user_lyon sur C:\Shares\Repertoire_19
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_lyon sur \\ynovLAxelserver\Repertoire_19
+Permission NTFS Modify ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_19
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_19
+Permission NTFS Modify ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_19
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Permission de partage Read/Write ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_19
+Permission NTFS Modify ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_19
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Permission de partage Read/Write ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_19
+Permission NTFS Modify ajoutée pour ynovDomaine\user_lille sur C:\Shares\Repertoire_19
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_lille sur \\ynovLAxelserver\Repertoire_19
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_19
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_19
+Permission NTFS Modify ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_19
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Permission de partage Read/Write ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_19
+Permission NTFS Modify ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_19
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_19
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest1 sur C:\Shares\Repertoire_19
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest1 sur \\ynovLAxelserver\Repertoire_19
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest2 sur C:\Shares\Repertoire_19
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest2 sur \\ynovLAxelserver\Repertoire_19
+Permission NTFS Modify ajoutée pour ynovDomaine\user_toulouse1 sur C:\Shares\Repertoire_19
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_toulouse1   Allow             Change     
+Permission de partage Read/Write ajoutée pour ynovDomaine\user_toulouse1 sur \\ynovLAxelserver\Repertoire_19
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_toulouse2 sur C:\Shares\Repertoire_19
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_toulouse1   Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_toulouse2   Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_toulouse2 sur \\ynovLAxelserver\Repertoire_19
+Permission NTFS Modify ajoutée pour ynovDomaine\user_aix sur C:\Shares\Repertoire_19
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_toulouse1   Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_toulouse2   Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_aix         Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_aix sur \\ynovLAxelserver\Repertoire_19
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_lyon sur C:\Shares\Repertoire_20
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_lyon sur \\ynovLAxelserver\Repertoire_20
+Permission NTFS FullControl ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_20
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Full       
+Permission de partage Owner ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_20
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_20
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_20
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_montpellier sur C:\Shares\Repertoire_20
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_montpellier sur \\ynovLAxelserver\Repertoire_20
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_lille sur C:\Shares\Repertoire_20
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_lille sur \\ynovLAxelserver\Repertoire_20
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_20
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_20
+Permission NTFS Modify ajoutée pour ynovDomaine\user_paris_ouest sur C:\Shares\Repertoire_20
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_paris_ouest sur \\ynovLAxelserver\Repertoire_20
+Permission NTFS FullControl ajoutée pour ynovDomaine\user_nice sur C:\Shares\Repertoire_20
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Full       
+Permission de partage Owner ajoutée pour ynovDomaine\user_nice sur \\ynovLAxelserver\Repertoire_20
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_paris_ouest1 sur C:\Shares\Repertoire_20
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_paris_ouest1 sur \\ynovLAxelserver\Repertoire_20
+Permission NTFS FullControl ajoutée pour ynovDomaine\user_paris_ouest2 sur C:\Shares\Repertoire_20
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Full       
+Permission de partage Owner ajoutée pour ynovDomaine\user_paris_ouest2 sur \\ynovLAxelserver\Repertoire_20
+Permission NTFS Modify ajoutée pour ynovDomaine\user_toulouse1 sur C:\Shares\Repertoire_20
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_toulouse1   Allow             Change     
+Permission de partage Write ajoutée pour ynovDomaine\user_toulouse1 sur \\ynovLAxelserver\Repertoire_20
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_toulouse2 sur C:\Shares\Repertoire_20
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_toulouse1   Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_toulouse2   Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_toulouse2 sur \\ynovLAxelserver\Repertoire_20
+Permission NTFS ReadAndExecute ajoutée pour ynovDomaine\user_aix sur C:\Shares\Repertoire_20
+Repertoir... *         Tout le monde                Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_lyon        Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_montpellier Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_lille       Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ouest Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_nice        Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_paris_ou... Allow             Full       
+Repertoir... *         YNOVDOMAINE\user_toulouse1   Allow             Change     
+Repertoir... *         YNOVDOMAINE\user_toulouse2   Allow             Read       
+Repertoir... *         YNOVDOMAINE\user_aix         Allow             Read       
+Permission de partage Read ajoutée pour ynovDomaine\user_aix sur \\ynovLAxelserver\Repertoire_20
+
+
+
+PS C:\Users\Administrateur> 
