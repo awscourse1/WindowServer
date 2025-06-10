@@ -1,3 +1,7 @@
+# NOTE : ce script ne marche que pour moi parce que j'ai formaté les noms et prénoms des utilisateurs d'une certaine manière pour pouvoir utiliser une boucle.
+# J'ai gardé le meme mot de passe pour tous les utilisateurs par soucis de facilité.
+# Si chaque utilisateur doit avoir un mot de passe différent, ou des noms et prénoms qui n'ont pas la même structure, il faudra oublier la boucle et créer les utilisateurs un par un en modifiant le script.
+
 # Définition du chemin de l'OU cible
 $ouPath = "OU=ps_Utilisateurs,OU=ps_ynovGroup,DC=godwin,DC=com"
 
