@@ -1,15 +1,15 @@
 $prenoms = @(
-    "filibert",   
-    "unicorn",   
-    "conan",    
-    "kanelle",     
-    "space",   
-    "yousouf",   
-    "ousama",  
-    "unicorne",  
-    "bernadette", 
-    "graisn-de-ris",     
-    "jean-luc"      
+    "hayden",
+    "marion",
+    "neyla",
+    "quentin",
+    "sam",
+    "pluto",
+    "daisie",
+    "donald",
+    "minnie",
+    "mickey",
+    "jordan",  
 )
 
 $groupes = @{

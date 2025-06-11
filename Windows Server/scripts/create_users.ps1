@@ -5,17 +5,17 @@ if (-not (Get-ADOrganizationalUnit -Filter "Name -eq 'Utilisateurs'" -SearchBase
 }
 
 $utilisateurs = @(
-    "filibert albert",
-    "unicorn sparkels",
-    "conan barbarian",
-    "kanelle kurkuma",
-    "space monkey",
-    "yousouf malouf",
-    "ousama benladen",
-    "unicorne metal",
-    "bernadette tapis",
-    "graisn-de-ris ying",
-    "jean-luc melanchon"
+    "hayden anderson",
+    "marion morello",
+    "neyla anderson",
+    "quentin larivière",
+    "sam anderson",
+    "pluto mouse",
+    "daisie duck",
+    "donald duck",
+    "minnie mouse",
+    "mickey mouse",
+    "jordan bardella"
 )
 
 $motDePasse = ConvertTo-SecureString "Lmnu1245782/@#" -AsPlainText -Force
