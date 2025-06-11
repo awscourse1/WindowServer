@@ -13,16 +13,16 @@ $prenoms = @(
 )
 
 $groupes = @{
-    "Direction_PO"        = @($prenoms[1], $prenoms[3], $prenoms[9], $prenoms[10])    # albert, stan, axel, najm
-    "Compta_Lyon"         = @($prenoms[2])                                            # anne
-    "Commercial_Toulouse" = @($prenoms[2], $prenoms[3])                               # anne, stan
-    "Technique_Nantes"    = @($prenoms[4], $prenoms[5])                               # kelyan, jeremy
-    "Comm_Aix"            = @($prenoms[4], $prenoms[5])                               # kelyan, jeremy
-    "Social_Lille"        = @($prenoms[6], $prenoms[10])                              # maiwenn, najm
-    "Enseignant_Casa"     = @($prenoms[7])                                            # cassian
-    "Salle_Nice"          = @($prenoms[8])                                            # matthieu
-    "Refectoire_PO"       = @($prenoms[9])                                            # axel
-    "Sport_Mtp"           = @($prenoms[10])                                           # najm
+    "Direction_PO"        = @($prenoms[0], $prenoms[1], $prenoms[3], $prenoms[9], $prenoms[10])
+    "Compta_Lyon"         = @($prenoms[0], $prenoms[2])                                            
+    "Commercial_Toulouse" = @($prenoms[0], $prenoms[2], $prenoms[3])                               
+    "Technique_Nantes"    = @($prenoms[0], $prenoms[4], $prenoms[5])                               
+    "Comm_Aix"            = @($prenoms[0], $prenoms[4], $prenoms[5])                               
+    "Social_Lille"        = @($prenoms[0], $prenoms[6], $prenoms[10])                             
+    "Enseignant_Casa"     = @($prenoms[0], $prenoms[7])                                            
+    "Salle_Nice"          = @($prenoms[0], $prenoms[8])                                            
+    "Refectoire_PO"       = @($prenoms[0], $prenoms[9])                                            
+    "Sport_Mtp"           = @($prenoms[0], $prenoms[10])                                           
 }
 
 $domaine = "YnovDomaine.com"
