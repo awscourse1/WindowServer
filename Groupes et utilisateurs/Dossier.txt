@@ -1,0 +1,300 @@
+# ------------------------------------------------------------------------
+# SCRIPT CORRIGÉ pour appliquer les ACL NTFS sur C:\Shares\Répertoire 1..20
+# en s'assurant que la syntaxe icacls /grant est bien : "GROUPE:(DROIT)".
+# ------------------------------------------------------------------------
+
+# 1) Chemin parent
+$parentFolder = "C:\Shares"
+
+# 2) Domaine et noms de groupes exacts
+$domain = "YnovDomaine.com"
+$gDirection          = "$domain\Direction"
+$gComptabilite       = "$domain\Comptabilite"
+$gCommercial         = "$domain\Commercial"
+$gTechnique          = "$domain\Technique"
+$gCommunication      = "$domain\Communication"
+$gService_sociale    = "$domain\Service_Sociale"
+$gService_enseignant = "$domain\Service_Enseignant"
+$gRefectoire         = "$domain\Refectoire"
+$gService_salle      = "$domain\Service_Salle"
+$gService_sport      = "$domain\Service_Sport"
+
+# 3) Hashtable des permissions pour chaque dossier
+$aclMap = @{
+
+    "Répertoire 1" = @{
+        $gDirection          = "R"
+        $gCommercial         = "F"
+        $gTechnique          = "W"
+        $gCommunication      = "R"
+        $gService_sociale    = "R"
+        $gService_enseignant = "R"
+        $gService_salle      = "W"
+        $gService_sport      = "F"
+        # Comptabilite, Refectoire → pas de droit
+    }
+
+    "Répertoire 2" = @{
+        $gDirection          = "R"
+        $gTechnique          = "R"
+        $gCommunication      = "R"
+        $gService_enseignant = "R"
+        $gRefectoire         = "W"
+        $gService_sport      = "R"
+    }
+
+    "Répertoire 3" = @{
+        $gDirection          = "W"
+        $gComptabilite       = "R"
+        $gCommercial         = "R"
+        $gTechnique          = "M"
+        $gCommunication      = "W"
+        $gService_sociale    = "F"
+        $gService_enseignant = "M"
+        $gRefectoire         = "W"
+        $gService_salle      = "W"
+        $gService_sport      = "R"
+    }
+
+    "Répertoire 4" = @{
+        $gDirection          = "W"
+        $gComptabilite       = "R"
+        $gCommercial         = "M"
+        $gTechnique          = "M"
+        $gCommunication      = "R"
+        $gService_sociale    = "R"
+        $gService_enseignant = "R"
+        $gRefectoire         = "R"
+        $gService_salle      = "W"
+        $gService_sport      = "W"
+    }
+
+    "Répertoire 5" = @{
+        $gDirection          = "R"
+        $gComptabilite       = "W"
+        $gCommercial         = "R"
+        $gCommunication      = "R"
+        $gService_sociale    = "W"
+        $gService_enseignant = "M"
+        $gRefectoire         = "W"
+        $gService_salle      = "W"
+        $gService_sport      = "R"
+    }
+
+    "Répertoire 6" = @{
+        $gDirection          = "R"
+        $gCommercial         = "F"
+        $gCommunication      = "W"
+        $gService_sociale    = "R"
+        $gService_enseignant = "R"
+        $gRefectoire         = "R"
+        $gService_salle      = "M"
+        $gService_sport      = "M"
+    }
+
+    "Répertoire 7" = @{
+        $gDirection          = "R"
+        $gComptabilite       = "R"
+        $gTechnique          = "M"
+        $gCommunication      = "M"
+        $gService_sociale    = "W"
+        $gService_enseignant = "M"
+        $gRefectoire         = "R"
+    }
+
+    "Répertoire 8" = @{
+        $gDirection          = "F"
+        $gComptabilite       = "R"
+        $gCommercial         = "R"
+        $gCommunication      = "F"
+        $gService_sociale    = "F"
+        $gService_enseignant = "F"
+        $gRefectoire         = "M"
+        $gService_salle      = "R"
+    }
+
+    "Répertoire 9" = @{
+        $gDirection          = "R"
+        $gComptabilite       = "W"
+        $gCommercial         = "M"
+        $gTechnique          = "R"
+        $gCommunication      = "R"
+        $gService_sociale    = "M"
+        $gService_enseignant = "F"
+        $gRefectoire         = "W"
+        $gService_sport      = "W"
+    }
+
+    "Répertoire 10" = @{
+        $gDirection          = "R"
+        $gComptabilite       = "F"
+        $gCommercial         = "F"
+        $gTechnique          = "W"
+        $gCommunication      = "F"
+        $gService_sociale    = "W"
+        $gService_enseignant = "W"
+        $gRefectoire         = "W"
+        $gService_salle      = "R"
+        $gService_sport      = "R"
+    }
+
+    "Répertoire 11" = @{
+        $gDirection          = "R"
+        $gComptabilite       = "W"
+        $gCommercial         = "R"
+        $gTechnique          = "W"
+        $gCommunication      = "W"
+        $gService_sociale    = "R"
+        $gService_enseignant = "W"
+        $gRefectoire         = "F"
+        $gService_salle      = "R"
+        $gService_sport      = "R"
+    }
+
+    "Répertoire 12" = @{
+        $gDirection          = "M"
+        $gComptabilite       = "R"
+        $gCommercial         = "R"
+        $gTechnique          = "W"
+        $gCommunication      = "W"
+        $gService_enseignant = "R"
+        $gRefectoire         = "R"
+        $gService_sport      = "W"
+    }
+
+    "Répertoire 13" = @{
+        $gDirection          = "R"
+        $gCommercial         = "R"
+        $gTechnique          = "R"
+        $gCommunication      = "M"
+        $gService_enseignant = "W"
+        $gRefectoire         = "R"
+        $gService_sport      = "W"
+    }
+
+    "Répertoire 14" = @{
+        $gDirection          = "W"
+        $gComptabilite       = "R"
+        $gCommercial         = "R"
+        $gTechnique          = "M"
+        $gCommunication      = "W"
+        $gService_enseignant = "W"
+        $gRefectoire         = "F"
+        $gService_salle      = "M"
+        $gService_sport      = "R"
+    }
+
+    "Répertoire 15" = @{
+        $gDirection          = "R"
+        $gComptabilite       = "R"
+        $gCommercial         = "W"
+        $gTechnique          = "R"
+        $gCommunication      = "R"
+        $gService_sociale    = "M"
+        $gService_enseignant = "W"
+        $gRefectoire         = "W"
+        $gService_salle      = "R"
+        $gService_sport      = "R"
+    }
+
+    "Répertoire 16" = @{
+        $gComptabilite       = "R"
+        $gCommercial         = "R"
+        $gTechnique          = "W"
+        $gCommunication      = "R"
+        $gService_sociale    = "W"
+        $gService_enseignant = "W"
+        $gService_salle      = "R"
+        $gService_sport      = "F"
+    }
+
+    "Répertoire 17" = @{
+        $gDirection          = "R"
+        $gComptabilite       = "W"
+        $gCommercial         = "W"
+        $gTechnique          = "W"
+        $gService_sociale    = "R"
+        $gRefectoire         = "R"
+        $gService_salle      = "M"
+        $gService_sport      = "W"
+    }
+
+    "Répertoire 18" = @{
+        $gDirection          = "W"
+        $gComptabilite       = "R"
+        $gTechnique          = "W"
+        $gCommunication      = "R"
+        $gService_sociale    = "W"
+        $gService_enseignant = "R"
+        $gRefectoire         = "R"
+        $gService_salle      = "W"
+        $gService_sport      = "R"
+    }
+
+    "Répertoire 19" = @{
+        $gDirection          = "R"
+        $gComptabilite       = "R"
+        $gCommunication      = "W"
+        $gService_sociale    = "R"
+        $gService_enseignant = "W"
+        $gRefectoire         = "W"
+        $gService_salle      = "W"
+        $gService_sport      = "R"
+    }
+
+    "Répertoire 20" = @{
+        $gDirection          = "R"
+        $gTechnique          = "W"
+        $gCommunication      = "R"
+        $gService_sociale    = "R"
+        $gService_enseignant = "F"
+        $gService_sport      = "F"
+    }
+
+} # fin de $aclMap
+
+# 4) Parcourir chaque dossier et appliquer les droits via icacls
+foreach ($folderName in $aclMap.Keys) {
+    $fullPath = Join-Path $parentFolder $folderName
+
+    # 4.2) Vérifier que le dossier existe
+    if (-not (Test-Path $fullPath)) {
+        Write-Warning "Le dossier '$fullPath' n'existe pas. Vérifiez le nom exact."
+        continue
+    }
+
+    Write-Host "------ Appliquer ACL sur : $fullPath ------"
+
+    $folderACLs = $aclMap[$folderName]
+
+    foreach ($entry in $folderACLs.GetEnumerator()) {
+        $adGroup  = $entry.Key      # ex. "YnovDomaine.com\Comptabilite"
+        $permCode = $entry.Value.Trim()  # ex. "F"
+
+        if ([string]::IsNullOrWhiteSpace($permCode)) { continue }
+
+        # 4.5) Traduire le code en syntaxe icacls "(R)","(W)","(M)","(F)"
+        $icaclsRight = switch ($permCode) {
+            "R" { "(R)" }
+            "W" { "(W)" }
+            "M" { "(M)" }
+            "F" { "(F)" }
+            default {
+                throw "Permission inconnue '$permCode' pour $adGroup sur $folderName"
+            }
+        }
+
+        # 4.6) Appeler icacls AVEC LE GROUPE ET LA PERMISSION DANS LA MÊME CHAÎNE
+        $grantArg = "$adGroup`:$icaclsRight"  
+        #   → ex. "YnovDomaine.com\Comptabilite:(F)"
+
+        $cmd = "icacls `"$fullPath`" /grant `"$grantArg`" /inheritance:r"
+        Invoke-Expression $cmd
+
+        Write-Host "  → $adGroup : $permCode"
+    }
+
+    Write-Host ""
+}
+
+Write-Host "✅ Toutes les permissions NTFS ont été appliquées selon la matrice."
